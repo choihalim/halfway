@@ -106,6 +106,7 @@ def get_midpoint(start, end):
 
     return midpoint_lat, midpoint_lng
 
+# calculates distance given start/end addresses
 def calculate_distance(start, end):
     url = f'https://maps.googleapis.com/maps/api/directions/json?origin={start}&destination={end}&key={API_KEY}'
 
@@ -119,7 +120,8 @@ def calculate_distance(start, end):
         return rounded_distance
     else:
         return None
-    
+
+# calculates duration given start/end coordinates
 def calculate_duration(start, end):
     start_coords = f"{start[0]},{start[1]}"
     end_coords = f"{end[0]},{end[1]}"
@@ -140,12 +142,44 @@ def calculate_duration(start, end):
         return duration
     except:
         return None
+    
 
+def get_places(location, radius, search):
+    endpoint = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
+    location = location.strip("()").replace(" ", "")
+    params = {
+        "key": API_KEY,
+        "location": location,
+        "radius": radius,
+        "keyword": search
+    }
+    params_encoded = urlencode(params)
+    places_url = f"{endpoint}?{params_encoded}"
+
+    r = requests.get(places_url)
+    if r.status_code not in range(200, 299):
+        return {}
+    return r.json()
+
+def get_place_details(place_id):
+    detail_endpoint = f"https://maps.googleapis.com/maps/api/place/details/json"
+    detail_params = {
+            "place_id": f"{place_id}",
+            "fields" : "name,rating,formatted_phone_number,formatted_address,icon,opening_hours,website,type",
+            "key": API_KEY
+        }
+    detail_params_encoded = urlencode(detail_params)
+    detail_url = f"{detail_endpoint}?{detail_params_encoded}"
+    r = requests.get(detail_url)
+    if r.status_code not in range(200, 299):
+        return {}
+    return r.json()
 
 @app.route('/')
 def index():
     return ''
 
+# creates a trip and calls methods to calculate coordinates/distance/duration
 @app.route('/create', methods=["POST"])
 def trips():
     if request.method == "POST":
@@ -191,9 +225,49 @@ def trips():
         response = make_response(jsonify(new_trip.trip_info()), 201)
         return response
 
-@app.route('/places', methods=["POST"])
-def places():
-    pass
+# gets POIs near midpoint
+@app.route('/<int:trip_id>/places', methods=["POST"])
+def places(trip_id):
+    trip = Trip.query.filter(Trip.id == trip_id).first()
+    if request.method == "POST":
+        radius = request.get_json()["radius"]
+        keyword = request.get_json()["keyword"]
+        location = trip.midpoint_coords
+        return get_places(location, radius, keyword)
+
+# gets detail of a specific POI
+@app.route('/places/<string:place_id>')
+def detail_place(place_id):
+    return get_place_details(place_id)
+
+# saves a place with associated trip id
+@app.route('/<int:trip_id>/places/<string:place_id>', methods=["POST"])
+def save_place(trip_id, place_id):
+    trip = Trip.query.filter(Trip.id == trip_id).first()
+    if trip:
+        if request.method == "POST":
+            place_details = get_place_details(place_id)
+            name = place_details["result"]["name"]
+            address = place_details["result"]["formatted_address"]
+            type = place_details["result"]["types"][0]
+            distance = str(calculate_distance(trip.start, address))
+            trip_id = trip.id
+            new_place = Place(
+                name=name,
+                address=address,
+                type=type,
+                distance=distance,
+                trip_id=trip_id
+            )
+            db.session.add(new_place)
+            db.session.commit()
+
+            response = make_response(jsonify(new_place.place_info()), 201)
+            return response
+
+
+
+
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)

@@ -87,6 +87,10 @@ class Place(db.Model, SerializerMixin):
     trip_id = db.Column(db.Integer, db.ForeignKey('trips.id'))
     # trip = db.relationship("Trip", backref='places')
 
+    def place_info(self):
+        serialized = self.to_dict(rules=("-trip",))
+        return serialized
+
 
 class Comment(db.Model, SerializerMixin):
     __tablename__ = "comments"
