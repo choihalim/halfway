@@ -29,3 +29,5 @@ api = Api(app)
 
 # Instantiate CORS
 CORS(app)
+
+app.config['SECRET_KEY'] = b'\x1dI\xf8\xabv\x02!+\t}\xa3\x00\xf8\xbf\xf48'

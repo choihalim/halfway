@@ -1,4 +1,4 @@
-from flask import Flask, request, make_response, jsonify
+from flask import Flask, request, make_response, jsonify, session
 from flask_restful import Resource
 
 from config import app, db, api
@@ -265,7 +265,63 @@ def save_place(trip_id, place_id):
             response = make_response(jsonify(new_place.place_info()), 201)
             return response
 
+@app.route('/<int:user_id>/trips')
+def user_trips(user_id):
+    user = User.query.filter(User.id == user_id).first()
+    if user:
+        trips = user.user_trips
+        serialized_trips = [trip.trip_info() for trip in trips]
+        return make_response(jsonify(serialized_trips), 200)
 
+@app.route('/login', methods=["POST"])
+def login():
+    if request.method == "POST":
+        rq = request.get_json()
+        user = User.query.filter(User.username.like(f"%{rq['username']}%"),
+                                User.password == rq['password']).first()
+
+        if user:
+            session['user_id'] = user.id
+            print(session['user_id'])
+            return make_response(user.user_info(), 200)
+        else:
+            return {'errors': ['Invalid username/password. Please try again.']}, 401
+
+
+@app.route('/authorize')
+def authorize_session():
+    user_id = session.get('user_id')
+    if not user_id:
+        return {'errors': 'You must be logged in to do that. Please log in or make an account.'}, 401
+    else:
+        user = User.query.filter(User.id == user_id).first()
+        if user:
+            return make_response(user.user_info(), 200)
+
+
+@app.route('/logout', methods=["DELETE"])
+def logout():
+    if request.method == "DELETE":
+        session['user_id'] = None
+        return make_response('', 204)
+
+
+@app.route('/create_account', methods=["POST"])
+def create_account():
+    if request.method == "POST":
+        rq = request.get_json()
+        new_user = User(
+            username=rq['username'],
+            password=rq['password'],
+            email=rq['email']
+        )
+        if new_user:
+            db.session.add(new_user)
+            db.session.commit()
+            session['user_id'] = new_user.id
+            return make_response(new_user.user_info(), 201)
+        else:
+            return {'errors': ['Missing username/password or email. Please try again.']}, 401
 
 
 

@@ -25,6 +25,10 @@ class User(db.Model, SerializerMixin):
 
     user_trips = db.relationship("Trip", backref='user')
     comments = db.relationship("Comment", backref='user')
+
+    def user_info(self):
+        serialized = self.to_dict(rules=("-comments", "-user_trips"))
+        return serialized
     # user_friendships = db.relationship("Friendship", foreign_keys=[Friendship.user_id], backref='user')
     # friend_friendships = db.relationship("Friendship", foreign_keys=[Friendship.friend_id], backref='friend')
 
