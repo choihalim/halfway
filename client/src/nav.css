@@ -1,0 +1,58 @@
+.custom-nav-link {
+  color: #f8f8f8 !important;
+  /* Slightly whiter color */
+  transition: color 0.3s !important;
+  /* Smooth transition on hover */
+}
+
+.custom-nav-link:hover,
+.custom-nav-link:focus,
+.custom-nav-link:active {
+  color: #ffffff !important;
+  /* Full white color on hover, focus, and active */
+  font-weight: bold !important;
+  text-decoration: none !important;
+}
+
+.custom-nav-link .dropdown-menu .dropdown-item:focus,
+.custom-nav-link .dropdown-menu .dropdown-item:hover {
+  font-weight: bold;
+}
+
+#navbarScrollingDropdown:focus,
+#navbarScrollingDropdown:hover {
+  font-weight: bold;
+}
+
+.custom-nav-link.active {
+  font-weight: bold !important;
+}
+
+.logout-nav-link:hover {
+  font-weight: bold !important;
+  color: lightcoral !important;
+  transition: color 0.3s !important;
+
+}
+
+.logout-nav-link {
+  color: #f8f8f8 !important;
+  transition: color 0.3s !important;
+  margin-left: 1000px;
+}
+
+.login-nav-link:hover {
+  font-weight: bold !important;
+  color: lightgreen !important;
+  transition: color 0.3s !important;
+}
+
+.login-nav-link {
+  color: #f8f8f8 !important;
+  transition: color 0.3s !important;
+  margin-left: 1150px;
+}
+
+.login-nav-link:active {
+  font-weight: bold !important;
+}

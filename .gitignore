@@ -1,6 +1,6 @@
-# Created by https://www.gitignore.io/api/node
-
 .DS_Store
+
+secret.py
 
 ### Node ###
 # Logs

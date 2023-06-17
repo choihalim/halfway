@@ -1,5 +1,5 @@
 {
-  "name": "phase-4-rails-putting-it-all-together-auth-client",
+  "name": "halfway",
   "version": "0.1.0",
   "private": true,
   "proxy": "http://localhost:5555",
@@ -8,6 +8,7 @@
     "@testing-library/react": "^11.2.7",
     "@testing-library/user-event": "^12.8.3",
     "react": "^17.0.2",
+    "react-bootstrap": "^2.7.4",
     "react-dom": "^17.0.2",
     "react-markdown": "^6.0.2",
     "react-router-dom": "^5.2.0",
