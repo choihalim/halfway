@@ -1,5 +1,6 @@
 import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
+import Map from './Map';
 
 
 
@@ -27,6 +28,7 @@ function TripCard({ midpoint, start, end, created_at, created_by, total_distance
     return (
         <>
             <h1>{midpoint}</h1>
+            <Map />
             <Card bg="dark" text="light" border="secondary" style={{ width: '18rem' }}>
                 <Card.Img variant="top" alt="map image here" />
                 <Card.Body>
