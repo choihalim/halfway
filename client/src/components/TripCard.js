@@ -8,19 +8,23 @@ function TripCard({ start_coords, end_coords, midpoint_coords, midpoint, start, 
 
     function calculateCreatedTime() {
         const createdDate = new Date(created_at)
-        const timeDifference = Date.now() - createdDate.getTime()
+        const currentDate = new Date()
+        const timeDifference = currentDate.getTime() - createdDate.getTime();
 
         const mins = Math.floor(timeDifference / (1000 * 60))
         const hrs = Math.floor(timeDifference / (1000 * 60 * 60))
         const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24))
 
-        let duration = ""
+        let duration = "";
         if (mins < 60) {
-            duration = `${mins} ${mins === 1 ? 'minute' : 'minutes'} ago`;
+            duration = `${mins + 240} ${mins === 1 ? 'minute' : 'minutes'} ago`
         } else if (hrs < 24) {
-            duration = `${hrs} ${hrs === 1 ? 'hour' : 'hours'} ago`;
+            duration = `${hrs} ${hrs === 1 ? 'hour' : 'hours'} ago`
+        } else if (days < 7) {
+            duration = `${days} ${days === 1 ? 'day' : 'days'} ago`
         } else {
-            duration = `${days} ${days === 1 ? 'day' : 'days'} ago`;
+            const weeks = Math.floor(days / 7);
+            duration = `${weeks} ${weeks === 1 ? 'week' : 'weeks'} ago`
         }
         return duration
     }

@@ -67,7 +67,7 @@ function App() {
             <About />
           </Route>
           <Route exact path='/create'>
-            <Create />
+            <Create user={user} />
           </Route>
           <Route exact path='/home'>
             <Home />
