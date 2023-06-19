@@ -9,6 +9,7 @@ import NotFound from "./components/NotFound";
 import Navigation from "./components/Navigation";
 import Auth from "./components/Auth";
 import './app.css'
+import TripDetail from "./components/TripDetail";
 
 function App() {
 
@@ -68,6 +69,9 @@ function App() {
           </Route>
           <Route exact path='/create'>
             <Create user={user} />
+          </Route>
+          <Route exact path='/trip/:id'>
+            <TripDetail user={user} />
           </Route>
           <Route exact path='/home'>
             <Home />

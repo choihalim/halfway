@@ -3,13 +3,14 @@ from flask_restful import Resource
 
 from config import app, db, api
 from secret import API_KEY
-from models import User, Trip, Place, Comment#, Friendship
+from models import User, Trip, Place, Comment  # , Friendship
 
 import requests
 from urllib.parse import urlencode
 from geopy.distance import geodesic
 from bisect import bisect_left
 import polyline
+
 
 def get_lat_lng(address):
     data_type = 'json'
@@ -27,6 +28,7 @@ def get_lat_lng(address):
         pass
     return latlng.get("lat"), latlng.get("lng")
 
+
 def get_address(lat, lng):
     data_type = 'json'
     endpoint = f"https://maps.googleapis.com/maps/api/geocode/{data_type}"
@@ -43,6 +45,7 @@ def get_address(lat, lng):
         pass
     return address
 
+
 def get_midpoint(start, end):
     start_coords = get_lat_lng(start)
     end_coords = get_lat_lng(end)
@@ -51,7 +54,7 @@ def get_midpoint(start, end):
 
     if not start_coords or not end_coords:
         return None
-    
+
     endpoint = "https://maps.googleapis.com/maps/api/directions/json"
     params = {
         "origin": f"{start_coords[0]},{start_coords[1]}",
@@ -64,12 +67,12 @@ def get_midpoint(start, end):
 
     if r.status_code not in range(200, 299):
         return None
-    
+
     data = r.json()
 
     if data["status"] != "OK" or "routes" not in data or len(data["routes"]) == 0:
         return None
-    
+
     polyline_str = data["routes"][0]["overview_polyline"]["points"]
     decoded_polyline = polyline.decode(polyline_str)
 
@@ -101,12 +104,16 @@ def get_midpoint(start, end):
     remaining_duration = midpoint_duration - prev_duration
     fraction = remaining_duration / (next_duration - prev_duration)
 
-    midpoint_lat = prev_step["end_location"]["lat"] + (next_step["end_location"]["lat"] - prev_step["end_location"]["lat"]) * fraction
-    midpoint_lng = prev_step["end_location"]["lng"] + (next_step["end_location"]["lng"] - prev_step["end_location"]["lng"]) * fraction
+    midpoint_lat = prev_step["end_location"]["lat"] + (
+        next_step["end_location"]["lat"] - prev_step["end_location"]["lat"]) * fraction
+    midpoint_lng = prev_step["end_location"]["lng"] + (
+        next_step["end_location"]["lng"] - prev_step["end_location"]["lng"]) * fraction
 
     return midpoint_lat, midpoint_lng
 
 # calculates distance given start/end addresses
+
+
 def calculate_distance(start, end):
     url = f'https://maps.googleapis.com/maps/api/directions/json?origin={start}&destination={end}&key={API_KEY}'
 
@@ -114,7 +121,8 @@ def calculate_distance(start, end):
     data = response.json()
 
     if data['status'] == 'OK':
-        distance = data['routes'][0]['legs'][0]['distance']['value']  # Distance in meters
+        # Distance in meters
+        distance = data['routes'][0]['legs'][0]['distance']['value']
         distance_miles = distance / 1609.34  # Convert meters to miles
         rounded_distance = round(distance_miles, 1)
         return rounded_distance
@@ -122,6 +130,8 @@ def calculate_distance(start, end):
         return None
 
 # calculates duration given start/end coordinates
+
+
 def calculate_duration(start, end):
     start_coords = f"{start[0]},{start[1]}"
     end_coords = f"{end[0]},{end[1]}"
@@ -142,7 +152,7 @@ def calculate_duration(start, end):
         return duration
     except:
         return None
-    
+
 
 def get_places(location, radius, search):
     endpoint = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
@@ -161,13 +171,14 @@ def get_places(location, radius, search):
         return {}
     return r.json()
 
+
 def get_place_details(place_id):
     detail_endpoint = f"https://maps.googleapis.com/maps/api/place/details/json"
     detail_params = {
-            "place_id": f"{place_id}",
-            "fields" : "name,rating,formatted_phone_number,formatted_address,icon,opening_hours,website,type",
-            "key": API_KEY
-        }
+        "place_id": f"{place_id}",
+        "fields": "name,rating,formatted_phone_number,formatted_address,icon,opening_hours,website,type",
+        "key": API_KEY
+    }
     detail_params_encoded = urlencode(detail_params)
     detail_url = f"{detail_endpoint}?{detail_params_encoded}"
     r = requests.get(detail_url)
@@ -175,21 +186,24 @@ def get_place_details(place_id):
         return {}
     return r.json()
 
+
 @app.route('/')
 def index():
     return ''
 
 # creates a trip and calls methods to calculate coordinates/distance/duration
+
+
 @app.route('/create', methods=["POST"])
 def trips():
     if request.method == "POST":
         start = request.get_json()["start"]
         s = get_lat_lng(start)
-        start_coords=str(s)
+        start_coords = str(s)
         print("Start Coordinates:", start_coords)
         end = request.get_json()["end"]
         e = get_lat_lng(end)
-        end_coords=str(e)
+        end_coords = str(e)
         print("End Coordinates:", end_coords)
         m = get_midpoint(start, end)
         midpoint = get_address(*m)
@@ -225,7 +239,18 @@ def trips():
         response = make_response(jsonify(new_trip.trip_info()), 201)
         return response
 
+# gets trip details by trip id
+
+
+@app.route('/trip/<int:trip_id>')
+def get_trip_details(trip_id):
+    trip = Trip.query.filter(Trip.id == trip_id).first()
+    response = make_response(jsonify(trip.trip_info()), 200)
+    return response
+
 # gets POIs near midpoint
+
+
 @app.route('/<int:trip_id>/places', methods=["POST"])
 def places(trip_id):
     trip = Trip.query.filter(Trip.id == trip_id).first()
@@ -236,11 +261,15 @@ def places(trip_id):
         return get_places(location, radius, keyword)
 
 # gets detail of a specific POI
+
+
 @app.route('/places/<string:place_id>')
 def detail_place(place_id):
     return get_place_details(place_id)
 
 # saves a place with associated trip id
+
+
 @app.route('/<int:trip_id>/places/<string:place_id>', methods=["POST"])
 def save_place(trip_id, place_id):
     trip = Trip.query.filter(Trip.id == trip_id).first()
@@ -265,6 +294,7 @@ def save_place(trip_id, place_id):
             response = make_response(jsonify(new_place.place_info()), 201)
             return response
 
+
 @app.route('/<int:user_id>/trips')
 def user_trips(user_id):
     user = User.query.filter(User.id == user_id).first()
@@ -273,12 +303,13 @@ def user_trips(user_id):
         serialized_trips = [trip.trip_info() for trip in trips]
         return make_response(jsonify(serialized_trips), 200)
 
+
 @app.route('/login', methods=["POST"])
 def login():
     if request.method == "POST":
         rq = request.get_json()
         user = User.query.filter(User.username.like(f"%{rq['username']}%"),
-                                User.password == rq['password']).first()
+                                 User.password == rq['password']).first()
 
         if user:
             session['user_id'] = user.id
@@ -322,7 +353,6 @@ def create_account():
             return make_response(new_user.user_info(), 201)
         else:
             return {'errors': ['Missing username/password or email. Please try again.']}, 401
-
 
 
 if __name__ == '__main__':

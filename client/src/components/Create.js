@@ -33,7 +33,7 @@ function Create({ user }) {
             .then(r => r.json())
             .then((c) => {
                 console.log(c)
-                history.push('/')
+                history.push(`/trip/${c.id}`)
                 setFormState(initialState)
             })
 
