@@ -1,10 +1,10 @@
 import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
-import Map from './Map';
+import Map from './MapCard';
 
 
 
-function TripCard({ midpoint, start, end, created_at, created_by, total_distance, status }) {
+function TripCard({ start_coords, end_coords, midpoint_coords, midpoint, start, end, created_at, created_by, total_distance, status }) {
 
     function calculateCreatedTime() {
         const createdDate = new Date(created_at)
@@ -27,10 +27,10 @@ function TripCard({ midpoint, start, end, created_at, created_by, total_distance
 
     return (
         <>
-            <h1>{midpoint}</h1>
-            <Map />
             <Card bg="dark" text="light" border="secondary" style={{ width: '18rem' }}>
-                <Card.Img variant="top" alt="map image here" />
+                <div style={{ position: 'relative', height: '200px' }}>
+                    <Map center={midpoint_coords} start={start_coords} end={end_coords} />
+                </div>
                 <Card.Body>
                     <Card.Title>{midpoint}</Card.Title>
                     <Card.Text>
