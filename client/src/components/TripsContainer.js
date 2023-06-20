@@ -4,6 +4,7 @@ function TripsContainer({ trips }) {
     return (
         <>
             {trips.map(trip => <TripCard key={trip.id}
+                id={trip.id}
                 midpoint={trip.midpoint}
                 midpoint_coords={trip.midpoint_coords}
                 start={trip.start}
