@@ -40,7 +40,7 @@ function TripCard({ start_coords, end_coords, midpoint_coords, midpoint, start, 
                     <Card.Text>
                         Status: {status}
                     </Card.Text>
-                    <Button variant="primary">View Details</Button>
+                    <Button variant="primary">View Places</Button>
                 </Card.Body>
                 <Card.Footer className="text-muted">{calculateCreatedTime()}</Card.Footer>
             </Card>

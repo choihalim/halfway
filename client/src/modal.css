@@ -1,0 +1,31 @@
+.modal-dark {
+    background-color: #333;
+    color: #fff;
+    border-color: white;
+    /* Set the border color to white */
+}
+
+.modal-dark-header {
+    background-color: #222;
+    color: #fff;
+    border-color: darkgray;
+    /* Set the border color to dark gray */
+}
+
+.modal-dark-body {
+    background-color: #333;
+    color: #fff;
+    border-color: white;
+    /* Set the border color to white */
+}
+
+.modal-dark-footer {
+    background-color: #222;
+    color: #fff;
+    border-color: darkgray;
+    /* Set the border color to dark gray */
+}
+
+.modal-right {
+    text-align: right;
+}

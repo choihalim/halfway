@@ -162,9 +162,9 @@ function MapCard({ center, start, end }) {
         return { lat, lng };
     }
 
-    const midpoint = getCoordinates(center);
-    const s = getCoordinates(start);
-    const e = getCoordinates(end);
+    const midpoint = getCoordinates(center)
+    const s = getCoordinates(start)
+    const e = getCoordinates(end)
 
     return (
         <>
