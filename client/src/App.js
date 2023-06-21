@@ -27,7 +27,6 @@ function App() {
       .then(user => {
         if (!user.errors) {
           updateUser(user)
-          console.log("working")
         }
         else updateUser(null)
       })

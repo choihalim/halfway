@@ -220,6 +220,7 @@ def trips():
         duration_end_mid = str(calculate_duration(e, m))
         status = 'scheduled'
         user_id = request.get_json()["user_id"]
+        public = request.get_json()["public"]
         new_trip = Trip(
             start=start,
             start_coords=start_coords,
@@ -235,6 +236,7 @@ def trips():
             duration_end_mid=duration_end_mid,
             status=status,
             user_id=user_id,
+            public=public
         )
 
         db.session.add(new_trip)
@@ -242,6 +244,13 @@ def trips():
 
         response = make_response(jsonify(new_trip.trip_info()), 201)
         return response
+
+@app.route('/public_trips')
+def get_public_trips():
+    trips = Trip.query.filter(Trip.public == 1).all()
+    serialized_trips = [trip.trip_info() for trip in trips]
+    response = make_response(jsonify(serialized_trips), 200)
+    return response
 
 # gets trip details by trip id
 

@@ -61,6 +61,7 @@ class Trip(db.Model, SerializerMixin):
     midpoint_coords = db.Column(db.String)
     midpoint = db.Column(db.String)
     status = db.Column(db.String)
+    public = db.Column(db.String)
     duration = db.Column(db.Integer)
     duration_start_mid = db.Column(db.Integer)
     duration_end_mid = db.Column(db.Integer)

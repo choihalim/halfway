@@ -14,31 +14,35 @@ function TripCard({ places, id, start_coords, end_coords, midpoint_coords, midpo
     const history = useHistory()
 
     const params = useParams()
-    console.log(params)
+
+    const currentPath = window.location.pathname
 
     function calculateCreatedTime() {
-        const createdDate = new Date(created_at)
-        const currentDate = new Date()
+        const createdDate = new Date(created_at);
+        const currentDate = new Date();
         const timeDifference = currentDate.getTime() - createdDate.getTime();
 
-        const mins = Math.floor(timeDifference / (1000 * 60))
-        const hrs = Math.floor(timeDifference / (1000 * 60 * 60))
-        const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24))
+        const mins = Math.floor(timeDifference / (1000 * 60)) + 240;
+        const hrs = Math.round(timeDifference / (1000 * 60 * 60));
+        const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
 
         let duration = "";
-        if (mins < 60 && mins < 0) {
-            duration = `${mins + 240} ${mins === 1 ? 'minute' : 'minutes'} ago`
-        } else if (mins < 60) {
-            duration = `${mins} ${mins === 1 ? 'minute' : 'minutes'} ago`
-        } else if (hrs < 24) {
-            duration = `${hrs} ${hrs === 1 ? 'hour' : 'hours'} ago`
+        if (hrs < 1) {
+            if (mins >= 60) {
+                duration = `${Math.abs(hrs)} ${Math.abs(hrs) === 1 ? 'hour' : 'hours'} ago`;
+            } else {
+                duration = `${mins} ${mins === 1 ? 'minute' : 'minutes'} ago`;
+            }
+        } else if (hrs < 24 && mins >= 60) {
+            duration = `${Math.abs(hrs)} ${Math.abs(hrs)  === 1 ? 'hour' : 'hours'} ago`;
         } else if (days < 7) {
-            duration = `${days} ${days === 1 ? 'day' : 'days'} ago`
+            duration = `${days} ${days === 1 ? 'day' : 'days'} ago`;
         } else {
             const weeks = Math.floor(days / 7);
-            duration = `${weeks} ${weeks === 1 ? 'week' : 'weeks'} ago`
+            duration = `${weeks} ${weeks === 1 ? 'week' : 'weeks'} ago`;
         }
-        return duration
+        return duration;
+
     }
 
     function fetchTripPlaces() {
@@ -67,10 +71,13 @@ function TripCard({ places, id, start_coords, end_coords, midpoint_coords, midpo
                     <Card.Text>
                         Status: {status}
                     </Card.Text>
+                    <Card.Text>
+                        {currentPath.endsWith('/explore') ? `Created by: ${created_by}` : null}
+                    </Card.Text>
                     {places ? <Button variant="success" onClick={handleViewPlaces} >
                         View Places
                     </Button> : null}
-                    {params.id == id ? null : (
+                    {params.id === id || currentPath.endsWith('/explore') ? null : (
                         <Button variant="primary" onClick={() => handleAddPlaces(id)}>
                             Add Places
                         </Button>

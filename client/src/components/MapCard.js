@@ -5,7 +5,7 @@ import '../map.css'
 const MapContainer = ({ google, midpoint, start, end }) => {
     const mapRef = useRef(null)
 
-    const [position, setPosition] = useState([10, 10])
+    const [position, setPosition] = useState({ lat: 10, lng: 10 })
 
     useEffect(() => {
         setPosition(midpoint);
@@ -112,8 +112,8 @@ const MapContainer = ({ google, midpoint, start, end }) => {
                 zoom={11.5}
                 center={position}
                 styles={mapStyles}
-                disableDefaultUI="true"
-                clickableIcons="false"
+                disableDefaultUI={true}
+                clickableIcons={false}
             >
                 <Marker
                     position={start}

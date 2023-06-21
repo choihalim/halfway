@@ -27,7 +27,7 @@ function Navigation({ updateUser, user }) {
                     <Navbar.Brand href="/home">
                         <img
                             src={logo}
-                            width="200" c
+                            width="200"
                             height="60"
                             className="d-inline-block align-top"
                             alt="halfway logo"
