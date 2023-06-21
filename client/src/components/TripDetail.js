@@ -176,7 +176,10 @@ function TripDetail() {
                         <Modal.Title>{placeDetails.result.name}</Modal.Title>
                     </Modal.Header>
                     <Modal.Body className="modal-dark-body">
-                        Rating: {renderStars(placeDetails.result.rating)}
+                        {placeDetails.result.rating ?
+                            <div>
+                                Rating: {renderStars(placeDetails.result.rating)}
+                            </div> : null}
                         <div className="modal-right">
                             <Button href={placeDetails.result.website} target="_blank" variant="dark">
                                 Website
@@ -193,7 +196,7 @@ function TripDetail() {
                         {placeDetails.result.formatted_phone_number}
                     </Modal.Body>
                     <Modal.Body className="modal-dark-body">
-                        <pre>{placeDetails.result.opening_hours.weekday_text.join("\n")}</pre>
+                        <pre>{placeDetails.result.opening_hours ? placeDetails.result.opening_hours.weekday_text.join("\n") : null}</pre>
                     </Modal.Body>
                     <Modal.Footer className="modal-dark-footer">
                         <Button variant="success" onClick={handleSave}>

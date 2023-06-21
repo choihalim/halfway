@@ -1,14 +1,20 @@
 import { useState } from 'react'
+import { useHistory, useParams } from 'react-router-dom';
 import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
 import Map from './MapCard';
 import Modal from 'react-bootstrap/Modal'
 import '../modal.css'
 
-function TripCard({ id, start_coords, end_coords, midpoint_coords, midpoint, start, end, created_at, created_by, total_distance, status }) {
+function TripCard({ places, id, start_coords, end_coords, midpoint_coords, midpoint, start, end, created_at, created_by, total_distance, status }) {
 
     const [showModal, setShowModal] = useState(false)
     const [tripPlaces, setTripPlaces] = useState(null)
+
+    const history = useHistory()
+
+    const params = useParams()
+    console.log(params)
 
     function calculateCreatedTime() {
         const createdDate = new Date(created_at)
@@ -41,6 +47,10 @@ function TripCard({ id, start_coords, end_coords, midpoint_coords, midpoint, sta
             .then(setTripPlaces)
     }
 
+    function handleAddPlaces(id) {
+        history.push(`/trip/${id}`)
+    }
+
     const handleViewPlaces = () => {
         fetchTripPlaces()
         setShowModal(true)
@@ -57,9 +67,14 @@ function TripCard({ id, start_coords, end_coords, midpoint_coords, midpoint, sta
                     <Card.Text>
                         Status: {status}
                     </Card.Text>
-                    <Button variant="success" onClick={handleViewPlaces} disabled={!tripPlaces || tripPlaces.places.length === 0}>
+                    {places ? <Button variant="success" onClick={handleViewPlaces} >
                         View Places
-                    </Button>
+                    </Button> : null}
+                    {params.id == id ? null : (
+                        <Button variant="primary" onClick={() => handleAddPlaces(id)}>
+                            Add Places
+                        </Button>
+                    )}
                 </Card.Body>
                 <Card.Footer className="text-muted">{calculateCreatedTime()}</Card.Footer>
                 {tripPlaces ? <Modal show={showModal} onHide={() => setShowModal(false)} dialogClassName="modal-dark">

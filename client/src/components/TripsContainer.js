@@ -15,6 +15,7 @@ function TripsContainer({ trips }) {
                 created_by={trip.username}
                 status={trip.status}
                 total_distance={trip.distance}
+                places={trip.places}
             />)}
         </>
     )
