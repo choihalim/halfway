@@ -1,8 +1,10 @@
 import Button from 'react-bootstrap/Button'
 import Form from 'react-bootstrap/Form'
+import Modal from 'react-bootstrap/Modal'
 import '../create.css'
 import { useState } from 'react'
 import { useHistory } from 'react-router-dom'
+import '../modal.css'
 
 function Create({ user }) {
 
@@ -15,7 +17,9 @@ function Create({ user }) {
         user_id: `${user.id}`,
     }
 
+    const [showError, setShowError] = useState(false)
     const [formState, setFormState] = useState(initialState)
+
 
     function handleSubmit(e) {
         e.preventDefault()
@@ -30,13 +34,25 @@ function Create({ user }) {
         }
 
         fetch('/create', postRequest)
-            .then(r => r.json())
+            .then((response) => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    if (response.status === 403) {
+                        console.log("Invalid Addresses. Please try again.")
+                        setShowError(true)
+                        setFormState(initialState)
+                    } else if (response.status === 500) {
+                        console.log("Server error")
+                    }
+                    throw new Error(`Request failed with status code ${response.status}`)
+                }
+            })
             .then((c) => {
                 console.log(c)
                 history.push(`/trip/${c.id}`)
                 setFormState(initialState)
             })
-
     }
 
     function changeFormState(e) {
@@ -45,6 +61,11 @@ function Create({ user }) {
         const updateFormState = { ...formState, [name]: newValue }
 
         setFormState(updateFormState)
+    }
+
+    const handleCloseError = () => {
+        setFormState(initialState)
+        setShowError(false)
     }
 
     return (
@@ -56,7 +77,7 @@ function Create({ user }) {
                         <Form.Control
                             name="start"
                             type="text"
-                            value={formState.address}
+                            value={formState.start}
                             placeholder="e.g. 12345 Street Rd, City State Zipcode"
                             style={{ width: '400px' }}
                             onChange={changeFormState}
@@ -68,7 +89,7 @@ function Create({ user }) {
                         <Form.Control
                             name="end"
                             type="text"
-                            value={formState.f_address}
+                            value={formState.end}
                             placeholder="e.g. 12345 Street Rd, City State Zipcode"
                             style={{ width: '400px' }}
                             onChange={changeFormState}
@@ -92,6 +113,19 @@ function Create({ user }) {
                         Go Halfway
                     </Button>
                 </Form>
+                <Modal show={showError} onHide={handleCloseError} centered >
+                    <Modal.Header closeButton className='modal-dark-header'>
+                        <Modal.Title>Error</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body className='modal-dark-body'>
+                        <p>Invalid Addresses. Please try again.</p>
+                    </Modal.Body>
+                    <Modal.Footer className='modal-dark-footer'>
+                        <Button variant="secondary" onClick={handleCloseError}>
+                            Close
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
             </div>
         </>
     )

@@ -46,6 +46,7 @@ class User(db.Model, SerializerMixin):
     # def get_friends(self):
     #     return self.friendships.all()
 
+
 class Trip(db.Model, SerializerMixin):
     __tablename__ = "trips"
 
@@ -73,9 +74,10 @@ class Trip(db.Model, SerializerMixin):
 
     def trip_info(self):
         serialized = self.to_dict(rules=("-user", "-places"))
+        # serialized = self.to_dict(rules=("-user", ))
         serialized["username"] = self.user.username if self.user else None
+        serialized["places"] = [place.place_info() for place in self.places] if self.places else None
         return serialized
-
 
 
 class Place(db.Model, SerializerMixin):

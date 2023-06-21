@@ -102,6 +102,8 @@ def get_midpoint(start, end):
     next_step_duration = next_step["duration"]["value"]
 
     remaining_duration = midpoint_duration - prev_duration
+    if next_duration - prev_duration == 0:
+        return 'invalid starting and end points'
     fraction = remaining_duration / (next_duration - prev_duration)
 
     midpoint_lat = prev_step["end_location"]["lat"] + (
@@ -206,6 +208,8 @@ def trips():
         end_coords = str(e)
         print("End Coordinates:", end_coords)
         m = get_midpoint(start, end)
+        if m is None or len(m) > 2:
+            return make_response("Invalid Starting/End Points", 403)
         midpoint = get_address(*m)
         midpoint_coords = str(m)
         distance = str(calculate_distance(start, end))
