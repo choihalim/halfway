@@ -34,7 +34,7 @@ function TripCard({ places, id, start_coords, end_coords, midpoint_coords, midpo
                 duration = `${mins} ${mins === 1 ? 'minute' : 'minutes'} ago`;
             }
         } else if (hrs < 24 && mins >= 60) {
-            duration = `${Math.abs(hrs)} ${Math.abs(hrs)  === 1 ? 'hour' : 'hours'} ago`;
+            duration = `${Math.abs(hrs)} ${Math.abs(hrs) === 1 ? 'hour' : 'hours'} ago`;
         } else if (days < 7) {
             duration = `${days} ${days === 1 ? 'day' : 'days'} ago`;
         } else {
@@ -69,7 +69,7 @@ function TripCard({ places, id, start_coords, end_coords, midpoint_coords, midpo
                 <Card.Body>
                     <Card.Title>{midpoint}</Card.Title>
                     <Card.Text>
-                        Status: {status}
+                        {currentPath.endsWith('/explore') ? null : `Status: ${status}`}
                     </Card.Text>
                     <Card.Text>
                         {currentPath.endsWith('/explore') ? `Created by: ${created_by}` : null}
@@ -77,7 +77,7 @@ function TripCard({ places, id, start_coords, end_coords, midpoint_coords, midpo
                     {places ? <Button variant="success" onClick={handleViewPlaces} >
                         View Places
                     </Button> : null}
-                    {params.id === id || currentPath.endsWith('/explore') ? null : (
+                    {currentPath.endsWith(`/${id}`) || currentPath.endsWith('/explore') ? null : (
                         <Button variant="primary" onClick={() => handleAddPlaces(id)}>
                             Add Places
                         </Button>

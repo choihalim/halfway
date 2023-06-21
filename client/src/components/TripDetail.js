@@ -2,11 +2,16 @@ import React, { useEffect, useState } from 'react'
 import TripCard from './TripCard'
 import Map from './MapCard'
 import Card from 'react-bootstrap/Card'
+import Form from 'react-bootstrap/Form'
 import Button from 'react-bootstrap/Button'
 import Modal from 'react-bootstrap/Modal'
+import Row from 'react-bootstrap/Row'
+import Container from 'react-bootstrap/Container'
+import Col from 'react-bootstrap/Col'
 import { useParams } from 'react-router-dom'
 import '@fortawesome/fontawesome-free/css/all.min.css'
 import '../modal.css'
+import CloseButton from 'react-bootstrap/esm/CloseButton'
 
 function TripDetail() {
     const { id } = useParams()
@@ -92,7 +97,10 @@ function TripDetail() {
 
         fetch(`/${tripDetails.id}/places/${placeID}`, postRequest)
             .then(r => r.json())
-            .then(console.log)
+            .then((data) => {
+                console.log(data)
+                closeModal()
+            })
     }
 
     function handleButtonClick(id, index) {
@@ -123,21 +131,31 @@ function TripDetail() {
     }
 
     function renderPlaces() {
-        const cards = places.results.map((place, index) =>
-            <Card bg="dark" text="light" border="secondary" style={{ width: '18rem' }} key={place.place_id}>
-                <Card.Title>{place.name}</Card.Title>
-                <Card.Img src={place.icon} style={{ width: '25px' }}></Card.Img>
-                <Card.Body>
-                    {place.opening_hours && place.opening_hours.open_now ? (
-                        <span style={{ color: 'green' }}>Open Now</span>
-                    ) : (
-                        <span style={{ color: 'orange' }}>Check Operating Hours</span>
-                    )}
-                    <Button variant="primary" onClick={() => handleButtonClick(place.place_id, index)}>View Details</Button>
-                </Card.Body>
-
-            </Card>
-        )
+        const cards =
+            <Container>
+                <Row className="justify-content-center">
+                    {places.results.map((place, index) => (
+                        <Col xs={12} sm={6} md={4} lg={3} key={place.place_id} className="mb-4">
+                            <Card bg="dark" text="light" border="secondary" className='shadow' style={{ width: '18rem', margin: '0 10px' }}>
+                                <Card.Title className="text-center" style={{ marginTop: place.icon ? '50px' : '10px' }}>
+                                    {place.name}
+                                    {place.icon && <Card.Img src={place.icon} style={{ width: '25px', position: 'absolute', top: '10px', right: '10px' }} />}
+                                </Card.Title>
+                                <Card.Body className="d-flex flex-column align-items-center">
+                                    {place.opening_hours && place.opening_hours.open_now ? (
+                                        <span style={{ color: 'green' }}>Open Now</span>
+                                    ) : (
+                                        <span style={{ color: 'orange' }}>Check Operating Hours</span>
+                                    )}
+                                    <Button variant="primary" onClick={() => handleButtonClick(place.place_id, index)}>
+                                        View Details
+                                    </Button>
+                                </Card.Body>
+                            </Card>
+                        </Col>
+                    ))}
+                </Row>
+            </Container>
         return (
             <>
                 {places ? cards : null}
@@ -147,25 +165,44 @@ function TripDetail() {
 
     return (
         <>
-            {tripDetails && <TripCard {...tripDetails} />}
-            <div>
-                <form onSubmit={handleSubmit}>
-                    <label htmlFor="keyword">Keyword:</label>
-                    <input
-                        type="text"
-                        id="keyword"
-                        value={keyword}
-                        onChange={handleKeywordChange}
-                    />
-                    <label htmlFor="radius">Radius (miles):</label>
-                    <input
-                        type="number"
-                        id="radius"
-                        value={milesRadius}
-                        onChange={handleRadiusChange}
-                    />
-                    <button type="submit">Search</button>
-                </form>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '30px', marginBottom: '30px' }}>
+                {tripDetails && <TripCard {...tripDetails} />}
+
+                <Container>
+                    <Row className="justify-content-center">
+                        <Col xs={12} sm={8} md={6}>
+                            <Form onSubmit={handleSubmit} className="bg-dark text-light rounded shadow p-3" style={{ width: '400px', marginLeft: '110px', marginBottom: '20px', marginTop: '30px' }}>
+                                <Row className="mb-3" style={{ width: '400px' }}>
+                                    <Form.Group as={Col} controlId="keyword">
+                                        <Form.Label>Keyword:</Form.Label>
+                                        <Form.Control
+                                            type="text"
+                                            value={keyword}
+                                            onChange={handleKeywordChange}
+                                            className="bg-dark text-light"
+                                            required
+                                        />
+                                    </Form.Group>
+                                    <Form.Group as={Col} controlId="radius">
+                                        <Form.Label>Radius (miles):</Form.Label>
+                                        <Form.Control
+                                            type="number"
+                                            value={milesRadius}
+                                            onChange={handleRadiusChange}
+                                            className="bg-dark text-light"
+                                            required
+                                        />
+                                    </Form.Group>
+                                    <Form.Group as={Col} className="d-flex align-items-end">
+                                        <Button variant="primary" type="submit">
+                                            Search
+                                        </Button>
+                                    </Form.Group>
+                                </Row>
+                            </Form>
+                        </Col>
+                    </Row>
+                </Container>
             </div>
             <div>
                 {places ? renderPlaces() : null}
@@ -180,11 +217,11 @@ function TripDetail() {
                             <div>
                                 Rating: {renderStars(placeDetails.result.rating)}
                             </div> : null}
-                        <div className="modal-right">
+                        {placeDetails.result.website ? <div className="modal-right">
                             <Button href={placeDetails.result.website} target="_blank" variant="dark">
                                 Website
                             </Button>
-                        </div>
+                        </div> : null}
                     </Modal.Body>
                     <div style={{ position: 'relative', height: '300px' }}>
                         <Map center={formatCoordinates(places.results[placeIndex].geometry.location)} start={tripDetails.start_coords} end={tripDetails.end_coords} />
