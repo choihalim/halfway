@@ -22,8 +22,8 @@ function Navigation({ updateUser, user }) {
 
     return (
         <>
-            <Navbar bg='dark' sticky="top">
-                <Container >
+            <Navbar bg='dark' sticky="top" style={{ width: '100%' }}>
+                <Container>
                     <Navbar.Brand href="/home">
                         <img
                             src={logo}
@@ -33,7 +33,7 @@ function Navigation({ updateUser, user }) {
                             alt="halfway logo"
                         />
                     </Navbar.Brand>
-                    <Nav className="me-auto">
+                    <Nav className="container-fluid">
                         <Nav.Link
                             href="/home"
                             className={location.pathname === '/home' ? 'custom-nav-link active' : 'custom-nav-link'}
@@ -84,10 +84,12 @@ function Navigation({ updateUser, user }) {
                             :
                             null
                         }
+                    </Nav>
+                    <Nav>
                         {user ?
                             <Nav.Link
                                 onClick={handleLogout}
-                                className='logout-nav-link'
+                                className='logout-nav-link ms-auto'
                             >
                                 Logout
                             </Nav.Link>
