@@ -42,6 +42,16 @@ function Navigation({ updateUser, user }) {
                         </Nav.Link>
                         {user ?
                             <Nav.Link
+                                href="/create"
+                                className={location.pathname === '/create' ? 'custom-nav-link active' : 'custom-nav-link'}
+                            >
+                                Create
+                            </Nav.Link>
+                            :
+                            null
+                        }
+                        {user ?
+                            <Nav.Link
                                 href="/explore"
                                 className={location.pathname === '/explore' ? 'custom-nav-link active' : 'custom-nav-link'}
                             >
@@ -70,9 +80,7 @@ function Navigation({ updateUser, user }) {
                             null
                         }
                         {user ?
-                            <NavDropdown title={<span className="custom-nav-link">Trips</span>} id="navbarScrollingDropdown">
-                                <NavDropdown.Item href="/create">Create a Trip</NavDropdown.Item>
-                                <NavDropdown.Divider />
+                            <NavDropdown title={<span className={location.pathname === '/trips' || location.pathname === '/manage' ? 'custom-nav-link active' : 'custom-nav-link'}>Trips</span>} id="navbarScrollingDropdown">
                                 <NavDropdown.Item href="/trips">
                                     My Trips
                                 </NavDropdown.Item>
