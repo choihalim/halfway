@@ -164,7 +164,7 @@ function Auth({ updateUser }) {
                             </Form.Group>
                             <div className="d-flex justify-content-center">
                                 <Button variant="success" type="submit">
-                                    {signUp ? 'Login' : 'Register'}
+                                    {signUp ? 'Register' : 'Login'}
                                 </Button>
                             </div>
                         </Form>
