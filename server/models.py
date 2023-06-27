@@ -20,7 +20,6 @@ class FriendRequest(db.Model):
     accepted = db.Column(db.Boolean, default=False)
 
     requester = db.relationship('User', foreign_keys=[requester_id], viewonly=True, backref='sent_friend_requests')
-    # requested = db.relationship('User', foreign_keys=[requested_id], backref='received_friend_requests', overlaps="requester,sent_friend_requests")
     requested = db.relationship('User', foreign_keys=[requested_id], backref='received_friend_requests')
     friend = db.relationship('User', foreign_keys=[requester_id], viewonly=True)
 
@@ -31,6 +30,7 @@ class User(db.Model):
     username = db.Column(db.String, unique=True, nullable=False)
     email = db.Column(db.String, unique=True, nullable=False)
     password = db.Column(db.String, nullable=False)
+    default_address = db.Column(db.String)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
     user_trips = db.relationship("Trip", backref='user')
@@ -57,30 +57,26 @@ class User(db.Model):
     
     def send_friend_request(self, friend):
         if not self.is_friends_with(friend):
-            # Check if friend request already exists
             if self.has_friend_request_from(friend):
-                return False  # Friend request already sent
+                return False
 
-            # Create a new friend request
             friend_request = FriendRequest(requester_id=self.id, requested_id=friend.id)
             db.session.add(friend_request)
-            return True  # Friend request sent
+            return True
 
     def accept_friend_request(self, friend):
         if self.has_friend_request_from(friend):
             if self.is_friends_with(friend):
                 return False 
-            # Accept the friend request by adding both users as friends
             self.befriend(friend)
             friend.befriend(self)
             self.friend_requests.filter_by(friend=friend).delete()
-            return True  # Friend request accepted
+            return True
 
     def decline_friend_request(self, friend):
         if self.has_friend_request_from(friend):
-            # Decline the friend request by removing it
             self.friend_requests.filter_by(friend=friend).delete()
-            return True  # Friend request declined
+            return True
 
     def has_friend_request_from(self, friend):
         return self.friend_requests.filter_by(requested_id=friend.id).first() is not None
@@ -106,6 +102,7 @@ class User(db.Model):
             "id": self.id,
             "username": self.username,
             "email": self.email,
+            "default_address": self.default_address,
             "created_at": self.created_at.strftime("%Y-%m-%d %H:%M:%S"),
         }
         return serialized

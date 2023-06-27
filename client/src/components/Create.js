@@ -2,7 +2,7 @@ import Button from 'react-bootstrap/Button'
 import Form from 'react-bootstrap/Form'
 import Modal from 'react-bootstrap/Modal'
 import '../create.css'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import '../modal.css'
 
@@ -10,8 +10,10 @@ function Create({ user }) {
 
     const history = useHistory()
 
+    useEffect(() => { fetchFriendsList() }, [])
+
     const initialState = {
-        start: "",
+        start: user.default_address,
         end: "",
         public: false,
         user_id: `${user.id}`,
@@ -19,7 +21,13 @@ function Create({ user }) {
 
     const [showError, setShowError] = useState(false)
     const [formState, setFormState] = useState(initialState)
+    const [friendsList, setFriendsList] = useState([])
 
+    function fetchFriendsList() {
+        fetch(`/friends/${user.id}`)
+            .then(r => r.json())
+            .then(setFriendsList)
+    }
 
     function handleSubmit(e) {
         e.preventDefault()
@@ -86,6 +94,18 @@ function Create({ user }) {
                     </Form.Group>
                     <Form.Group className="mb-3">
                         <Form.Label>Friend's Address</Form.Label>
+                        {friendsList.length > 0 ? <Form.Select
+                            name="end"
+                            value={formState.end}
+                            onChange={changeFormState}
+                            style={{ width:"200px",marginBottom: "10px"}}
+                            required
+                        >
+                            <option value="">Select a Friend</option>
+                            {friendsList.map((friend, index) =>
+                                <option key={index} value={friend.default_address ? friend.default_address : ''}>{friend.username}</option>
+                            )}
+                        </Form.Select> : null}
                         <Form.Control
                             name="end"
                             type="text"
@@ -93,7 +113,8 @@ function Create({ user }) {
                             placeholder="e.g. 12345 Street Rd, City State Zipcode"
                             style={{ width: '400px' }}
                             onChange={changeFormState}
-                            required />
+                            required
+                        />
                     </Form.Group>
                     <Form.Text className="text-muted" style={{ display: "flex", justifyContent: 'center' }}>
                         We'll never share your address with anyone else.
@@ -126,7 +147,7 @@ function Create({ user }) {
                         </Button>
                     </Modal.Footer>
                 </Modal>
-            </div>
+            </div >
         </>
     )
 }
