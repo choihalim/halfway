@@ -89,7 +89,7 @@ function App() {
             <Friends user={user} />
           </Route>
           <Route exact path='/'>
-            <Home />
+            <Home user={user} />
           </Route>
           <Route component={NotFound} />
         </Switch>

@@ -327,6 +327,25 @@ def user_trips(user_id):
         trips = user.user_trips
         serialized_trips = [trip.trip_info() for trip in trips]
         return make_response(jsonify(serialized_trips), 200)
+    
+@app.route('/default-address/<int:user_id>', methods=['GET', 'PATCH'])
+def user_default_address(user_id):
+    user = User.query.filter(User.id == user_id).first()
+    if user:
+        if request.method == 'GET':
+            default_address = user.default_address
+            response = make_response(jsonify(default_address), 200)
+            return response
+        elif request.method == 'PATCH':
+            new_default_address = request.json.get('default_address')
+
+            if not new_default_address:
+                return jsonify({'error': 'Invalid data'}), 400
+            
+            user.default_address = new_default_address
+            db.session.commit()
+
+            return jsonify({'message': 'successfully updated default address'}), 200
 
 
 @app.route('/login', methods=["POST"])
@@ -375,6 +394,7 @@ def create_account():
         new_user = User(
             username=rq['username'],
             password=rq['password'],
+            default_address=rq['default_address'],
             email=rq['email']
         )
         if new_user:
@@ -405,6 +425,7 @@ def get_friends(id):
         serialized_friends.append({
             'id': friend.id,
             'username': friend.username,
+            'default_address': friend.default_address
         })
 
     return make_response(serialized_friends, 200)

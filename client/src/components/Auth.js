@@ -9,6 +9,7 @@ function Auth({ updateUser }) {
     const initialState = {
         username: '',
         password: '',
+        default_address: '',
         email: ''
     };
 
@@ -19,25 +20,24 @@ function Auth({ updateUser }) {
 
     useEffect(() => {
         return () => {
-            // Cleanup function to be executed when component is unmounted
-            setComponentMounted(false); // Update component mounted status
-        };
-    }, []);
+            setComponentMounted(false)
+        }
+    }, [])
 
     const renderFormErrors = () => {
-        return formErrors.map((error, index) => <span key={index}>{error}</span>);
-    };
+        return formErrors.map((error, index) => <span key={index}>{error}</span>)
+    }
 
     const changeFormState = (e) => {
-        const { name, value } = e.target;
-        const updateFormState = { ...formState, [name]: value };
-        setFormState(updateFormState);
+        const { name, value } = e.target
+        const updateFormState = { ...formState, [name]: value }
+        setFormState(updateFormState)
     };
 
-    const handleClick = () => setSignUp((signUp) => !signUp);
+    const handleClick = () => setSignUp((signUp) => !signUp)
 
     const userLoginOrCreation = (e) => {
-        e.preventDefault();
+        e.preventDefault()
 
         const postRequest = {
             method: 'POST',
@@ -46,18 +46,18 @@ function Auth({ updateUser }) {
                 accept: 'application/json'
             },
             body: JSON.stringify(formState)
-        };
+        }
 
         fetch(signUp ? '/create_account' : '/login', postRequest)
             .then((r) => r.json())
             .then((user) => {
                 if (isComponentMounted) { // Check if component is still mounted before updating state
                     if (!user.errors) {
-                        updateUser(user);
-                        history.push('/');
-                        setFormState(initialState);
+                        updateUser(user)
+                        history.push('/')
+                        setFormState(initialState)
                     } else {
-                        setFormErrors(user.errors);
+                        setFormErrors(user.errors)
                     }
                 }
             });
@@ -99,7 +99,22 @@ function Auth({ updateUser }) {
                                     required
                                 />
                             </Form.Group>
-
+                            <Form.Group className="mb-3" controlId="formBasicAddress">
+                                <Form.Label>
+                                    Address
+                                    <Form.Text className="text-muted" style={{ display: "flex", justifyContent: 'center' }}>
+                                        We'll never share your address with anyone else.
+                                    </Form.Text>
+                                </Form.Label>
+                                <Form.Control
+                                    type="default_address"
+                                    name="default_address"
+                                    placeholder="e.g. 12345 Street Rd, City State Zipcode"
+                                    value={formState.default_address}
+                                    onChange={changeFormState}
+                                    required
+                                />
+                            </Form.Group>
                             <Form.Group className="mb-3" controlId="formBasicPassword">
                                 <Form.Label>Password</Form.Label>
                                 <Form.Control
