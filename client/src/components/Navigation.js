@@ -4,6 +4,8 @@ import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUser } from '@fortawesome/free-solid-svg-icons';
 import logo from '../images/logo.png'
 import '../nav.css';
 
@@ -94,6 +96,18 @@ function Navigation({ updateUser, user }) {
                         }
                     </Nav>
                     <Nav>
+                        {user ?
+                            <NavDropdown
+                                title={<FontAwesomeIcon size="lg" icon={faUser} />}
+                                className='logout-nav-link ms-auto'
+                            >
+                                <NavDropdown.Item href="/settings">
+                                    Settings
+                                </NavDropdown.Item>
+                            </NavDropdown>
+                            :
+                            null
+                        }
                         {user ?
                             <Nav.Link
                                 onClick={handleLogout}

@@ -11,6 +11,7 @@ import Auth from "./components/Auth";
 import './app.css'
 import TripDetail from "./components/TripDetail";
 import Friends from "./components/Friends";
+import Settings from "./components/Settings";
 
 function App() {
 
@@ -87,6 +88,9 @@ function App() {
           </Route>
           <Route exact path='/friends'>
             <Friends user={user} />
+          </Route>
+          <Route exact path='/settings'>
+            <Settings user={user} />
           </Route>
           <Route exact path='/'>
             <Home user={user} />
