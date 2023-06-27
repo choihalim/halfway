@@ -5,6 +5,7 @@ from config import app, db, api
 from secret import API_KEY
 from models import User, Trip, Place, Comment, FriendRequest
 
+import bcrypt
 import requests
 from urllib.parse import urlencode
 from geopy.distance import geodesic
@@ -352,12 +353,10 @@ def user_default_address(user_id):
 def login():
     if request.method == "POST":
         rq = request.get_json()
-        user = User.query.filter(User.username.like(f"%{rq['username']}%"),
-                                 User.password == rq['password']).first()
+        user = User.query.filter(User.username.like(f"%{rq['username']}%")).first()
 
-        if user:
+        if user and bcrypt.checkpw(rq['password'].encode('utf-8'), user.password.encode('utf-8')):
             session['user_id'] = user.id
-            print(session['user_id'])
             return make_response(user.user_info(), 200)
         else:
             return {'errors': ['Invalid username/password. Please try again.']}, 401
@@ -391,11 +390,17 @@ def logout():
 def create_account():
     if request.method == "POST":
         rq = request.get_json()
+        n_username = rq['username']
+        n_password = rq['password']
+        salt = bcrypt.gensalt()
+        hashed_password = bcrypt.hashpw(n_password.encode('utf-8'), salt)
+        n_default_address = rq['default_address']
+        n_email = rq['email']
         new_user = User(
-            username=rq['username'],
-            password=rq['password'],
-            default_address=rq['default_address'],
-            email=rq['email']
+            username=n_username,
+            password=hashed_password.decode('utf-8'),
+            default_address=n_default_address,
+            email=n_email
         )
         if new_user:
             db.session.add(new_user)
