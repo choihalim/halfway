@@ -8,7 +8,6 @@ from models import User, Trip, Place, Comment, FriendRequest
 import bcrypt
 import requests
 from urllib.parse import urlencode
-from geopy.distance import geodesic
 from bisect import bisect_left
 import polyline
 
@@ -50,8 +49,6 @@ def get_address(lat, lng):
 def get_midpoint(start, end):
     start_coords = get_lat_lng(start)
     end_coords = get_lat_lng(end)
-
-    # total_distance = distance(start_coords, end_coords).kilometers
 
     if not start_coords or not end_coords:
         return None
