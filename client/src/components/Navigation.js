@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useLocation, useHistory } from 'react-router-dom';
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
@@ -77,7 +77,7 @@ function Navigation({ updateUser, user }) {
                                     My Trips
                                 </NavDropdown.Item>
                                 <NavDropdown.Divider />
-                                <NavDropdown.Item href="/explore">
+                                <NavDropdown.Item href="/manage">
                                     Manage Trips
                                 </NavDropdown.Item>
                             </NavDropdown>

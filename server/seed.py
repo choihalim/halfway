@@ -8,7 +8,8 @@ from faker import Faker
 
 # Local imports
 from app import app
-from models import db, User, Trip, Comment, Place#, Friendship
+from models import db, User, Trip, Comment, Place, friendship_table, FriendRequest
+from sqlalchemy import delete
 
 STATUSES = ["completed", "scheduled"]
 
@@ -23,6 +24,10 @@ if __name__ == '__main__':
         Trip.query.delete()
         Comment.query.delete()
         Place.query.delete()
+        FriendRequest.query.delete()
+        delete_friendships = delete(friendship_table)
+        commit = db.session.execute(delete_friendships)
+        db.session.commit()
         # Friendship.query.delete()
 
         users = []

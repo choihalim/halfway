@@ -1,7 +1,7 @@
 import TripCard from "./TripCard"
 import '../trips.css'
 
-function TripsContainer({ trips }) {
+function TripsContainer({ trips, removeTrip }) {
     return (
         <div className="trips-container">
             {trips.map(trip => <TripCard key={trip.id}
@@ -17,6 +17,7 @@ function TripsContainer({ trips }) {
                 status={trip.status}
                 total_distance={trip.distance}
                 places={trip.places}
+                removeTrip={removeTrip}
             />)}
         </div>
     )

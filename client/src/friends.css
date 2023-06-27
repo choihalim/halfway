@@ -1,0 +1,14 @@
+.custom-tabs .nav-link.active {
+    background-color: rgb(50, 50, 50);
+    color: gray;
+}
+
+.custom-tabs .nav-link {
+    background-color: rgb(40, 40, 40);
+    color: white;
+}
+
+.custom-tabs .nav-link {
+    margin-bottom: .5px;
+    /* Adjust the desired spacing value */
+}

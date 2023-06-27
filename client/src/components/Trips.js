@@ -13,13 +13,21 @@ function Trips({ user }) {
             .then(setTrips)
     }
 
-    console.log(trips)
+    function removeTrip(id) {
+        const deleteRequest = {
+            method: 'DELETE',
+        }
+        fetch(`/delete/${id}`, deleteRequest)
+            .then(() => {
+                const updatedTrips = trips.filter(trip => trip.id !== id)
+                setTrips(updatedTrips)
+            })
+    }
 
     return (
-        <>
-            <h1> Trips Page </h1>
-            <TripsContainer trips={trips} />
-        </>
+        <div style={{ marginTop: "30px" }}>
+            <TripsContainer trips={trips} removeTrip={removeTrip} />
+        </div>
     )
 }
 

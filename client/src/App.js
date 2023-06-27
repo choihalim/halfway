@@ -10,6 +10,7 @@ import Navigation from "./components/Navigation";
 import Auth from "./components/Auth";
 import './app.css'
 import TripDetail from "./components/TripDetail";
+import Friends from "./components/Friends";
 
 function App() {
 
@@ -73,13 +74,19 @@ function App() {
             <TripDetail user={user} />
           </Route>
           <Route exact path='/home'>
-            <Home />
+            <Home user={user} />
           </Route>
           <Route exact path='/trips'>
             <Trips user={user} />
           </Route>
+          <Route exact path='/manage'>
+            <Trips user={user} />
+          </Route>
           <Route exact path='/explore'>
             <Explore />
+          </Route>
+          <Route exact path='/friends'>
+            <Friends user={user} />
           </Route>
           <Route exact path='/'>
             <Home />

@@ -1,20 +1,30 @@
 from sqlalchemy_serializer import SerializerMixin
+from sqlalchemy.orm import joinedload
+
 from config import db
 
 
-# class Friendship(db.Model, SerializerMixin):
-#     __tablename__ = "friendships"
+friendship_table = db.Table(
+    'friendship',
+    db.Column('user_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
+    db.Column('friend_id', db.Integer, db.ForeignKey('users.id'), primary_key=True)
+)
 
-#     id = db.Column(db.Integer, primary_key=True)
-#     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-#     friend_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-#     created_at = db.Column(db.DateTime, server_default=db.func.now())
-#     updated_at = db.Column(db.DateTime, onupdate=db.func.now())
+class FriendRequest(db.Model):
+    __tablename__ = "friend_requests"
 
-#     user = db.relationship("User", foreign_keys=[user_id], backref='user_friendships')
-#     friend = db.relationship("User", foreign_keys=[friend_id], backref='friend_friendships')
+    id = db.Column(db.Integer, primary_key=True)
+    requester_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    requested_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    accepted = db.Column(db.Boolean, default=False)
 
-class User(db.Model, SerializerMixin):
+    requester = db.relationship('User', foreign_keys=[requester_id], viewonly=True, backref='sent_friend_requests')
+    # requested = db.relationship('User', foreign_keys=[requested_id], backref='received_friend_requests', overlaps="requester,sent_friend_requests")
+    requested = db.relationship('User', foreign_keys=[requested_id], backref='received_friend_requests')
+    friend = db.relationship('User', foreign_keys=[requester_id], viewonly=True)
+
+class User(db.Model):
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -26,27 +36,80 @@ class User(db.Model, SerializerMixin):
     user_trips = db.relationship("Trip", backref='user')
     comments = db.relationship("Comment", backref='user')
 
+    friends = db.relationship(
+            'User',
+            secondary=friendship_table,
+            primaryjoin=id == friendship_table.c.user_id,
+            secondaryjoin=id == friendship_table.c.friend_id,
+            backref=db.backref('friend_of', lazy='dynamic'),
+            lazy='dynamic'
+        )
+    
+    friend_requests = db.relationship(
+        'FriendRequest',
+        foreign_keys=[FriendRequest.requester_id],
+        backref=db.backref('requested_user', lazy='joined', overlaps="received_friend_requests"),
+        lazy='dynamic',
+        cascade='all, delete-orphan',
+        post_update=True,
+        overlaps="requester,sent_friend_requests"
+    )
+    
+    def send_friend_request(self, friend):
+        if not self.is_friends_with(friend):
+            # Check if friend request already exists
+            if self.has_friend_request_from(friend):
+                return False  # Friend request already sent
+
+            # Create a new friend request
+            friend_request = FriendRequest(requester_id=self.id, requested_id=friend.id)
+            db.session.add(friend_request)
+            return True  # Friend request sent
+
+    def accept_friend_request(self, friend):
+        if self.has_friend_request_from(friend):
+            if self.is_friends_with(friend):
+                return False 
+            # Accept the friend request by adding both users as friends
+            self.befriend(friend)
+            friend.befriend(self)
+            self.friend_requests.filter_by(friend=friend).delete()
+            return True  # Friend request accepted
+
+    def decline_friend_request(self, friend):
+        if self.has_friend_request_from(friend):
+            # Decline the friend request by removing it
+            self.friend_requests.filter_by(friend=friend).delete()
+            return True  # Friend request declined
+
+    def has_friend_request_from(self, friend):
+        return self.friend_requests.filter_by(requested_id=friend.id).first() is not None
+
+    def befriend(self, friend):
+        if not self.is_friends_with(friend):
+            self.friends.append(friend)
+            friend.friends.append(self)
+
+    def unfriend(self, friend):
+        if self.is_friends_with(friend):
+            self.friends.remove(friend)
+            friend.friends.remove(self)
+
+    def is_friends_with(self, user):
+        return self.friends.filter(friendship_table.c.friend_id == user.id).count() > 0
+
+    def get_friends(self):
+        return self.friends.all()
+    
     def user_info(self):
-        serialized = self.to_dict(rules=("-comments", "-user_trips"))
+        serialized = {
+            "id": self.id,
+            "username": self.username,
+            "email": self.email,
+            "created_at": self.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+        }
         return serialized
-    # user_friendships = db.relationship("Friendship", foreign_keys=[Friendship.user_id], backref='user')
-    # friend_friendships = db.relationship("Friendship", foreign_keys=[Friendship.friend_id], backref='friend')
-
-    # def add_friend(self, friend):
-    #     friendship = Friendship(user=self, friend=friend)
-    #     db.session.add(friendship)
-    #     db.session.commit()
-
-    # def remove_friend(self, friend):
-    #     friendship = self.friendships.filter_by(friend_id=friend.id).first()
-    #     if friendship:
-    #         db.session.delete(friendship)
-    #         db.session.commit()
-
-    # def get_friends(self):
-    #     return self.friendships.all()
-
-
+    
 class Trip(db.Model, SerializerMixin):
     __tablename__ = "trips"
 
@@ -69,15 +132,13 @@ class Trip(db.Model, SerializerMixin):
     updated_at = db.Column(db.DateTime, onupdate=db.func.now())
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    # user = db.relationship("User", backref='user_trips')
     places = db.relationship("Place", backref='trip')
-    # comments = db.relationship("Comment", backref='trip')
 
     def trip_info(self):
         serialized = self.to_dict(rules=("-user", "-places"))
-        # serialized = self.to_dict(rules=("-user", ))
         serialized["username"] = self.user.username if self.user else None
-        serialized["places"] = [place.place_info() for place in self.places] if self.places else None
+        serialized["places"] = [place.place_info()
+                                for place in self.places] if self.places else None
         return serialized
 
 
@@ -92,7 +153,6 @@ class Place(db.Model, SerializerMixin):
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
     trip_id = db.Column(db.Integer, db.ForeignKey('trips.id'))
-    # trip = db.relationship("Trip", backref='places')
 
     def place_info(self):
         serialized = self.to_dict(rules=("-trip",))
@@ -110,5 +170,4 @@ class Comment(db.Model, SerializerMixin):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     trip_id = db.Column(db.Integer, db.ForeignKey('trips.id'))
 
-    # user = db.relationship("User", backref='comments')
     trip = db.relationship("Trip", backref='comments')

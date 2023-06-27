@@ -3,7 +3,7 @@ from flask_restful import Resource
 
 from config import app, db, api
 from secret import API_KEY
-from models import User, Trip, Place, Comment  # , Friendship
+from models import User, Trip, Place, Comment, FriendRequest
 
 import requests
 from urllib.parse import urlencode
@@ -245,6 +245,7 @@ def trips():
         response = make_response(jsonify(new_trip.trip_info()), 201)
         return response
 
+
 @app.route('/public_trips')
 def get_public_trips():
     trips = Trip.query.filter(Trip.public == 1).all()
@@ -308,6 +309,17 @@ def save_place(trip_id, place_id):
             return response
 
 
+@app.route('/delete/<int:trip_id>', methods=['DELETE'])
+def delete_trip(trip_id):
+    trip = Trip.query.filter(Trip.id == trip_id).first()
+    if trip:
+        if request.method == 'DELETE':
+            db.session.delete(trip)
+            db.session.commit()
+            response = make_response('', 204)
+            return response
+
+
 @app.route('/<int:user_id>/trips')
 def user_trips(user_id):
     user = User.query.filter(User.id == user_id).first()
@@ -347,7 +359,13 @@ def authorize_session():
 def logout():
     if request.method == "DELETE":
         session['user_id'] = None
-        return make_response('', 204)
+        session.clear()
+        if session.get('user_id'):
+            del session['user_id']
+        response = make_response('', 204)
+        response.set_cookie('session', '', expires=0)
+        response.delete_cookie('remember_token')
+        return response
 
 
 @app.route('/create_account', methods=["POST"])
@@ -366,6 +384,219 @@ def create_account():
             return make_response(new_user.user_info(), 201)
         else:
             return {'errors': ['Missing username/password or email. Please try again.']}, 401
+
+
+@app.route('/friends/<int:id>', methods=['GET'])
+def get_friends(id):
+    user_id = id
+    user = User.query.filter_by(id=user_id).first()
+
+    if not user:
+        return {'errors': ['User not found']}, 404
+
+    friends = user.friends
+
+    if not friends:
+        return {'message': 'No friends found'}, 200
+
+    serialized_friends = []
+
+    for friend in friends:
+        serialized_friends.append({
+            'id': friend.id,
+            'username': friend.username,
+        })
+
+    return make_response(serialized_friends, 200)
+
+
+@app.route('/friend-requests/sent/<int:id>', methods=['GET'])
+def get_sent_friend_requests(id):
+    # user_id = session.get('user_id')
+    # print(user_id)
+    user_id = id
+    print(user_id)
+    user = User.query.filter_by(id=user_id).first()
+
+    if not user:
+        return {'errors': ['User not found']}, 404
+
+    sent_friend_requests = user.sent_friend_requests
+    # sent_friend_requests = [friend_request for friend_request in user.sent_friend_requests if friend_request.requester_id == user.id]
+
+    if not sent_friend_requests:
+        return {'message': 'No friend requests sent'}, 200
+
+    serialized_sent_friend_requests = []
+
+    for friend_request in sent_friend_requests:
+        serialized_sent_friend_requests.append({
+            'id': friend_request.id,
+            'user_id': friend_request.requested_id,
+            'username': friend_request.requested.username,
+        })
+
+    return {'sent_friend_requests': serialized_sent_friend_requests}, 200
+
+
+@app.route('/friend-requests/received/<int:id>', methods=['GET'])
+def get_received_friend_requests(id):
+    # user_id = session.get('user_id')
+    # print(user_id)
+    user_id = id
+    print(user_id)
+    user = User.query.filter_by(id=user_id).first()
+
+    if not user:
+        return {'errors': ['User not found']}, 404
+
+    received_friend_requests = user.received_friend_requests
+
+    if not received_friend_requests:
+        return {'message': 'No friend requests received'}, 200
+
+    serialized_received_friend_requests = []
+
+    for friend_request in received_friend_requests:
+        serialized_received_friend_requests.append({
+            'id': friend_request.id,
+            'user_id': friend_request.requester_id,
+            'username': friend_request.requester.username,
+        })
+
+    return make_response(serialized_received_friend_requests, 200)
+
+# sends a friend request
+
+
+@app.route('/befriend/<int:id>', methods=['POST'])
+def add_friend(id):
+    if request.method == 'POST':
+        rq = request.get_json()
+        # user_id = session.get('user_id')
+        user_id = id
+        print(user_id)
+        friend_username = rq['friend_username']
+
+        user = User.query.filter_by(id=user_id).first()
+        friend = User.query.filter_by(username=friend_username).first()
+
+        # Check if user and friend exist
+        if not user or not friend:
+            return {'errors': ['User or friend not found']}, 404
+
+        # Check if user is self
+        if user is friend:
+            return {'errors': ['Friendship must be between two unique users']}, 409
+
+        # Check if friendship already exists
+        if user.is_friends_with(friend):
+            return {'errors': ['Friendship already exists']}, 409
+
+        # Check if friend request already sent
+        if user.has_friend_request_from(friend):
+            return {'errors': ['Friend request already sent']}, 409
+
+        friend_request_sent = user.send_friend_request(friend)
+        if not friend_request_sent:
+            return {'errors': ['Failed to send friend request']}, 500
+
+        # Commit the changes to the database
+        try:
+            db.session.commit()
+            return {'message': 'Friend request sent successfully'}, 201
+        except Exception as e:
+            db.session.rollback()
+            print(e)
+            return {'errors': ['Failed to send friend request']}, 500
+
+
+@app.route('/friend-requests/accept/<int:id>', methods=['POST'])
+def accept_friend_request(id):
+    if request.method == 'POST':
+        rq = request.get_json()
+        user_id = id
+        friend_request_id = rq['friend_request_id']
+
+        user = User.query.filter_by(id=user_id).first()
+        friend_request = FriendRequest.query.filter_by(
+            id=friend_request_id, requested=user).first()
+
+        if not user or not friend_request:
+            return {'errors': ['User or friend request not found']}, 404
+
+        friend = friend_request.requester
+
+        if user.is_friends_with(friend):
+            return {'errors': ['Friendship already exists']}, 409
+
+        if friend_request in user.received_friend_requests:
+            user.friends.append(friend)
+            friend.friends.append(user)
+            db.session.delete(friend_request)
+            # user.accept_friend_request(friend)
+
+        try:
+            db.session.commit()
+            return {'message': 'Friend request accepted successfully'}, 200
+        except Exception as e:
+            db.session.rollback()
+            print(e)
+            return {'errors': ['Failed to accept friend request']}, 500
+
+@app.route('/friend-requests/deny/<int:id>', methods=['POST'])
+def deny_friend_request(id):
+    if request.method == 'POST':
+        rq = request.get_json()
+        user_id = id
+        friend_request_id = rq['friend_request_id']
+
+        user = User.query.filter_by(id=user_id).first()
+        friend_request = FriendRequest.query.filter_by(
+            id=friend_request_id, requested=user).first()
+
+        if not user or not friend_request:
+            return {'errors': ['User or friend request not found']}, 404
+
+        if friend_request in user.received_friend_requests:
+            db.session.delete(friend_request)
+
+        try:
+            db.session.commit()
+            return {'message': 'Friend request denied successfully'}, 200
+        except Exception as e:
+            db.session.rollback()
+            print(e)
+            return {'errors': ['Failed to deny friend request']}, 500
+
+@app.route('/remove-friend/<int:id>', methods=['POST'])
+def remove_friend(id):
+    if request.method == 'POST':
+        rq = request.get_json()
+        user_id = id
+        friend_id = rq['friend_id']
+
+        user = User.query.filter_by(id=user_id).first()
+        friend = User.query.filter_by(id=friend_id).first()
+
+        if user is friend:
+            return {'errors': ['Users are not friends with themselves']}, 409
+
+        if not user or not friend:
+            return {'errors': ['User or friend not found']}, 404
+
+        if not user.is_friends_with(friend):
+            return {'errors': ['Friendship does not exist']}, 404
+
+        user.unfriend(friend)
+
+        try:
+            db.session.commit()
+            return {'message': 'Friend removed successfully'}, 200
+        except Exception as e:
+            db.session.rollback()
+            print(e)
+            return {'errors': ['Failed to remove friend']}, 500
 
 
 if __name__ == '__main__':

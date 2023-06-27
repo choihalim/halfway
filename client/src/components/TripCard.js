@@ -1,19 +1,18 @@
 import { useState } from 'react'
-import { useHistory, useParams } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
 import Map from './MapCard';
 import Modal from 'react-bootstrap/Modal'
 import '../modal.css'
 
-function TripCard({ places, id, start_coords, end_coords, midpoint_coords, midpoint, start, end, created_at, created_by, total_distance, status }) {
+function TripCard({ places, id, start_coords, end_coords, midpoint_coords, midpoint, start, end, created_at, created_by, total_distance, status, removeTrip }) {
 
     const [showModal, setShowModal] = useState(false)
     const [tripPlaces, setTripPlaces] = useState(null)
+    const [isDeleted, setIsDeleted] = useState(false)
 
     const history = useHistory()
-
-    const params = useParams()
 
     const currentPath = window.location.pathname
 
@@ -55,6 +54,14 @@ function TripCard({ places, id, start_coords, end_coords, midpoint_coords, midpo
         history.push(`/trip/${id}`)
     }
 
+    function handleDeleteTrip(id) {
+        setIsDeleted(true)
+        setTimeout(() => {
+            removeTrip(id)
+            setIsDeleted(false)
+        }, 300)
+    }
+
     const handleViewPlaces = () => {
         fetchTripPlaces()
         setShowModal(true)
@@ -62,7 +69,7 @@ function TripCard({ places, id, start_coords, end_coords, midpoint_coords, midpo
 
     return (
         <>
-            <Card bg="dark" text="light" border="secondary" style={{ width: '18rem' }}>
+            <Card bg="dark" text="light" border="secondary" style={{ width: '18rem' }} className={isDeleted ? 'fade-out' : ''}>
                 <div style={{ position: 'relative', height: '200px' }}>
                     <Map center={midpoint_coords} start={start_coords} end={end_coords} />
                 </div>
@@ -74,27 +81,54 @@ function TripCard({ places, id, start_coords, end_coords, midpoint_coords, midpo
                     <Card.Text>
                         {currentPath.endsWith('/explore') ? `Created by: ${created_by}` : null}
                     </Card.Text>
-                    {places ? <Button variant="success" onClick={handleViewPlaces} >
+                    {places && !currentPath.endsWith('/manage') ? <Button variant="success" onClick={handleViewPlaces} >
                         View Places
                     </Button> : null}
-                    {currentPath.endsWith(`/${id}`) || currentPath.endsWith('/explore') ? null : (
-                        <Button variant="primary" onClick={() => handleAddPlaces(id)}>
-                            Add Places
-                        </Button>
-                    )}
+                    {currentPath.endsWith('/manage') ?
+                        <div>
+                            <Button variant="primary" onClick={() => handleAddPlaces(id)} style={{ marginRight: '20px' }}>
+                                Add Places
+                            </Button>
+                            <Button variant="danger" onClick={() => handleDeleteTrip(id)}>
+                                Delete Trip
+                            </Button>
+                        </div> : null
+                    }
                 </Card.Body>
                 <Card.Footer className="text-muted">{calculateCreatedTime()}</Card.Footer>
                 {tripPlaces ? <Modal show={showModal} onHide={() => setShowModal(false)} dialogClassName="modal-dark">
                     <Modal.Header closeButton className="modal-dark-header">
-                        <Modal.Title>{"trip name here"}</Modal.Title>
+                        <Modal.Title>{midpoint}</Modal.Title>
                     </Modal.Header>
                     <Modal.Body className="modal-dark-body">
                         {tripPlaces.places.length > 1 ? (
                             tripPlaces.places.map((place, index) => (
-                                <a key={index}>{place.address}</a>
+                                <>
+                                    {/* <h5 key={index} style={{ fontWeight: "bold" }}>{`${place.name} <a>(${place.type.replace(/_/g, ' ')})</a>`}</h5> */}
+                                    <h5 key={place.id} style={{ fontWeight: "bold" }}>
+                                        {place.name}
+                                        {" "}
+                                        <p style={{ fontSize: "medium" }}>({place.type.replace(/_/g, ' ')})</p>
+                                    </h5>
+                                    <p key={place.id}>{place.address}</p>
+                                    <br></br>
+                                    <p key={place.id}>{`Distance (from start): ${place.distance} miles`}</p>
+                                    {tripPlaces.places.length - 1 === index ? null : <hr style={{ margin: "10px 0" }} />}
+                                    <br></br>
+                                </>
                             ))
                         ) : (
-                            <a>{tripPlaces.places[0].address}</a>
+                            <>
+                                <h5 style={{ fontWeight: "bold" }}>
+                                    {tripPlaces.places[0].name}
+                                    {" "}
+                                    <p style={{ fontSize: "medium" }}>({tripPlaces.places[0].type.replace(/_/g, ' ')})</p>
+                                </h5>
+                                <p>{tripPlaces.places[0].address}</p>
+                                <br></br>
+                                <p>{`Distance (from start): ${tripPlaces.places[0].distance} miles`}</p>
+                                <br></br>
+                            </>
                         )}
                     </Modal.Body >
                     <Modal.Footer className="modal-dark-footer">

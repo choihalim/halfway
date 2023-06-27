@@ -4,7 +4,7 @@ import Form from 'react-bootstrap/Form';
 import { useHistory } from 'react-router-dom'
 
 function Auth({ updateUser }) {
-    const history = useHistory()
+    const history = useHistory();
 
     const initialState = {
         username: '',
@@ -14,19 +14,27 @@ function Auth({ updateUser }) {
 
     const [signUp, setSignUp] = useState(false);
     const [formState, setFormState] = useState(initialState);
-    const [formErrors, setFormErrors] = useState(null)
+    const [formErrors, setFormErrors] = useState(null);
+    const [isComponentMounted, setComponentMounted] = useState(true); // Add state for component mounted status
+
+    useEffect(() => {
+        return () => {
+            // Cleanup function to be executed when component is unmounted
+            setComponentMounted(false); // Update component mounted status
+        };
+    }, []);
 
     const renderFormErrors = () => {
-        return formErrors.map(error => <>{error}</>)
-    }
+        return formErrors.map((error, index) => <span key={index}>{error}</span>);
+    };
 
     const changeFormState = (e) => {
-        const { name, value } = e.target
-        const updateFormState = { ...formState, [name]: value }
-        setFormState(updateFormState)
-    }
+        const { name, value } = e.target;
+        const updateFormState = { ...formState, [name]: value };
+        setFormState(updateFormState);
+    };
 
-    const handleClick = () => setSignUp((signUp) => !signUp)
+    const handleClick = () => setSignUp((signUp) => !signUp);
 
     const userLoginOrCreation = (e) => {
         e.preventDefault();
@@ -35,30 +43,31 @@ function Auth({ updateUser }) {
             method: 'POST',
             headers: {
                 'content-type': 'application/json',
-                'accept': 'application/json'
+                accept: 'application/json'
             },
             body: JSON.stringify(formState)
-        }
-
+        };
 
         fetch(signUp ? '/create_account' : '/login', postRequest)
-            .then(r => r.json())
-            .then(user => {
-                if (!user.errors) {
-                    updateUser(user)
-                    history.push('/')
-                    setFormState(initialState)
-                } else {
-                    setFormErrors(user.errors)
+            .then((r) => r.json())
+            .then((user) => {
+                if (isComponentMounted) { // Check if component is still mounted before updating state
+                    if (!user.errors) {
+                        updateUser(user);
+                        history.push('/');
+                        setFormState(initialState);
+                    } else {
+                        setFormErrors(user.errors);
+                    }
                 }
-            })
-    }
+            });
+    };
 
     return (
         <>
             <div className="auth-form">
                 <div className="auth-info">
-                    <h2 style={{ color: 'red' }}> {formErrors ? renderFormErrors() : null}</h2>
+                    <h2 style={{ color: 'red' }}>{formErrors ? renderFormErrors() : null}</h2>
                     <h2>Please Log in or Sign up!</h2>
                     <h2>{signUp ? 'Already a member?' : 'Not a member?'}</h2>
                     <Button variant="secondary" onClick={handleClick}>
@@ -66,7 +75,7 @@ function Auth({ updateUser }) {
                     </Button>
                 </div>
                 <Form style={{ width: '25rem' }} onSubmit={userLoginOrCreation}>
-                    {signUp ?
+                    {signUp ? (
                         <div>
                             <Form.Group className="mb-3" controlId="formBasicEmail">
                                 <Form.Label>Username</Form.Label>
@@ -103,7 +112,7 @@ function Auth({ updateUser }) {
                                 />
                             </Form.Group>
                         </div>
-                        :
+                    ) : (
                         <div>
                             <Form.Group className="mb-3" controlId="formBasicEmail">
                                 <Form.Label>Username</Form.Label>
@@ -128,7 +137,8 @@ function Auth({ updateUser }) {
                                     required
                                 />
                             </Form.Group>
-                        </div>}
+                        </div>
+                    )}
                     <Form.Group className="mb-3" controlId="formBasicCheckbox">
                         <Form.Check type="checkbox" label="I'm not a robot" required />
                     </Form.Group>
@@ -138,7 +148,7 @@ function Auth({ updateUser }) {
                 </Form>
             </div>
         </>
-    )
+    );
 }
 
-export default Auth
+export default Auth;

@@ -16,10 +16,9 @@ function Explore() {
     }
 
     return (
-        <>
-            <h1> Explore Page </h1>
+        <div style={{ marginTop: "30px" }}>
             <TripsContainer trips={trips} />
-        </>
+        </div>
     )
 }
 

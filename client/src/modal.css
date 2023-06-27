@@ -29,3 +29,8 @@
 .modal-right {
     text-align: right;
 }
+
+.fade-out {
+    opacity: 0;
+    transition: opacity 0.3s ease-out;
+}

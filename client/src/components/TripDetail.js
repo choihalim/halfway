@@ -11,7 +11,6 @@ import Col from 'react-bootstrap/Col'
 import { useParams } from 'react-router-dom'
 import '@fortawesome/fontawesome-free/css/all.min.css'
 import '../modal.css'
-import CloseButton from 'react-bootstrap/esm/CloseButton'
 
 function TripDetail() {
     const { id } = useParams()
@@ -209,7 +208,7 @@ function TripDetail() {
             </div>
             {placeDetails ?
                 <Modal show={showModal} onHide={closeModal} dialogClassName="modal-dark">
-                    <Modal.Header closeButton className="modal-dark-header">
+                    <Modal.Header className="modal-dark-header">
                         <Modal.Title>{placeDetails.result.name}</Modal.Title>
                     </Modal.Header>
                     <Modal.Body className="modal-dark-body">
