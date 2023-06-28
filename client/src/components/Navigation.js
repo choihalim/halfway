@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useContext } from 'react';
+import { FriendRequestsContext } from './FriendRequestsContext';
 import { useLocation, useHistory } from 'react-router-dom';
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
@@ -13,6 +14,7 @@ function Navigation({ updateUser, user }) {
 
     const location = useLocation()
     const history = useHistory()
+    const [friendRequests] = useContext(FriendRequestsContext)
 
     const handleLogout = () => {
         fetch('/logout', { method: 'DELETE' })
@@ -77,6 +79,9 @@ function Navigation({ updateUser, user }) {
                                 className={location.pathname === '/friends' ? 'custom-nav-link active' : 'custom-nav-link'}
                             >
                                 Friends
+                                {friendRequests.length > 0 ? <sup>
+                                    <span className="badge badge-warning badge-circle" style={{ background: "red", color: 'white', width: '11px', height: '11px', borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} />
+                                </sup> : null}
                             </Nav.Link>
                             :
                             null

@@ -4,6 +4,7 @@ import About from "./components/About";
 import Create from "./components/Create";
 import Home from "./components/Home";
 import Explore from "./components/Explore";
+import { FriendRequestsProvider } from './components/FriendRequestsContext'
 import Trips from "./components/Trips";
 import NotFound from "./components/NotFound";
 import Navigation from "./components/Navigation";
@@ -62,42 +63,45 @@ function App() {
 
   return (
     <>
-      <Navigation updateUser={updateUser} user={user} />
-      <div className="pages">
-        <Switch>
-          <Route exact path='/about'>
-            <About />
-          </Route>
-          <Route exact path='/create'>
-            <Create user={user} />
-          </Route>
-          <Route exact path='/trip/:id'>
-            <TripDetail user={user} />
-          </Route>
-          <Route exact path='/home'>
-            <Home user={user} />
-          </Route>
-          <Route exact path='/trips'>
-            <Trips user={user} />
-          </Route>
-          <Route exact path='/manage'>
-            <Trips user={user} />
-          </Route>
-          <Route exact path='/explore'>
-            <Explore />
-          </Route>
-          <Route exact path='/friends'>
-            <Friends user={user} />
-          </Route>
-          <Route exact path='/settings'>
-            <Settings user={user} />
-          </Route>
-          <Route exact path='/'>
-            <Home user={user} />
-          </Route>
-          <Route component={NotFound} />
-        </Switch>
-      </div>
+      <FriendRequestsProvider user={user}>
+        <Navigation updateUser={updateUser} user={user} />
+
+        <div className="pages">
+          <Switch>
+            <Route exact path='/about'>
+              <About />
+            </Route>
+            <Route exact path='/create'>
+              <Create user={user} />
+            </Route>
+            <Route exact path='/trip/:id'>
+              <TripDetail user={user} />
+            </Route>
+            <Route exact path='/home'>
+              <Home user={user} />
+            </Route>
+            <Route exact path='/trips'>
+              <Trips user={user} />
+            </Route>
+            <Route exact path='/manage'>
+              <Trips user={user} />
+            </Route>
+            <Route exact path='/explore'>
+              <Explore />
+            </Route>
+            <Route exact path='/friends'>
+              <Friends user={user} />
+            </Route>
+            <Route exact path='/settings'>
+              <Settings user={user} />
+            </Route>
+            <Route exact path='/'>
+              <Home user={user} />
+            </Route>
+            <Route component={NotFound} />
+          </Switch>
+        </div>
+      </FriendRequestsProvider>
     </>
   )
 }

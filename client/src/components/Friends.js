@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import Modal from 'react-bootstrap/Modal';
 import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
@@ -7,21 +7,19 @@ import Tab from 'react-bootstrap/Tab';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
 import '../friends.css';
+import { FriendRequestsContext } from './FriendRequestsContext'
 
 function Friends({ user }) {
-    const [username, setUsername] = useState('');
-    const [friendRequests, setFriendRequests] = useState([]);
+    const [username, setUsername] = useState('')
+    const [friendRequests, setFriendRequests] = useContext(FriendRequestsContext)
     const [friendsList, setFriendsList] = useState([])
-    const [activeTab, setActiveTab] = useState('add');
-    const [showModal, setShowModal] = useState(false);
-    const [modalMessage, setModalMessage] = useState('');
+    const [activeTab, setActiveTab] = useState('add')
+    const [showModal, setShowModal] = useState(false)
+    const [modalMessage, setModalMessage] = useState('')
 
     const user_id = user.id;
 
     useEffect(() => {
-        if (activeTab === "requests") {
-            fetchFriendRequests();
-        }
         if (activeTab === "list") {
             fetchFriendsList();
         }
@@ -59,18 +57,6 @@ function Friends({ user }) {
         fetch(`/friends/${user_id}`)
             .then(r => r.json())
             .then(setFriendsList)
-    }
-
-    function fetchFriendRequests() {
-        fetch(`/friend-requests/received/${user_id}`)
-            .then(r => r.json())
-            .then(data => {
-                setFriendRequests(data)
-                console.log(data)
-            })
-            .catch((error) => {
-                console.log(error);
-            });
     }
 
     function requestFriend() {
@@ -181,7 +167,23 @@ function Friends({ user }) {
                                     )}
                                 </div>
                             </Tab>
-                            <Tab eventKey="requests" title="Requests">
+                            <Tab
+                                eventKey="requests"
+                                title={
+                                    friendRequests.length > 0 ? (
+                                        <>
+                                            Requests
+                                            <sup>
+                                                <span className="badge badge-warning badge-circle" style={{ background: "red", color: 'white', width: '12px', height: '12px', borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px' }}>
+                                                    {friendRequests.length}
+                                                </span>
+                                            </sup>
+                                        </>
+                                    ) : (
+                                        "Requests"
+                                    )
+                                }
+                            >
                                 <div style={{ marginTop: '20px', color: 'white' }}>
                                     {friendRequests.length > 0 ? (
                                         friendRequests.map((request) => (
@@ -222,7 +224,7 @@ function Friends({ user }) {
                 </Modal>
             </div >
         </div >
-    );
+    )
 }
 
 export default Friends;
