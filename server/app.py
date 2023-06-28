@@ -176,7 +176,7 @@ def get_place_details(place_id):
     detail_endpoint = f"https://maps.googleapis.com/maps/api/place/details/json"
     detail_params = {
         "place_id": f"{place_id}",
-        "fields": "name,rating,formatted_phone_number,formatted_address,icon,opening_hours,website,type",
+        "fields": "name,rating,user_ratings_total,formatted_phone_number,formatted_address,icon,opening_hours,website,type,photo,price_level,geometry",
         "key": API_KEY
     }
     detail_params_encoded = urlencode(detail_params)
@@ -288,17 +288,35 @@ def save_place(trip_id, place_id):
     if trip:
         if request.method == "POST":
             place_details = get_place_details(place_id)
-            name = place_details["result"]["name"]
-            address = place_details["result"]["formatted_address"]
-            type = place_details["result"]["types"][0]
+            name = place_details["result"].get("name", None)
+            address = place_details["result"].get("formatted_address", None)
+            type = place_details["result"].get("types", [None])[0]
+            website = place_details["result"].get("website", None)
+            price_level = place_details["result"].get("price_level", None)
+            user_ratings_total = place_details["result"].get("user_ratings_total", None)
+            location = place_details["result"]["geometry"].get("location", None)
+            place_coords = "lat: {lat}, lng: {lng}".format(lat=location["lat"], lng=location["lng"])
+            rating = place_details["result"].get("rating", None)
             distance = str(calculate_distance(trip.start, address))
+            place_id = place_id
             trip_id = trip.id
+
+            existing_place = Place.query.filter(Place.trip_id == trip_id, Place.place_id == place_id).first()
+            if existing_place:
+                return make_response(jsonify({"message": "Place already exists for this trip."}), 400)
+            
             new_place = Place(
                 name=name,
                 address=address,
                 type=type,
                 distance=distance,
-                trip_id=trip_id
+                website=website,
+                price_level=price_level,
+                user_ratings_total = user_ratings_total,
+                rating=rating,
+                place_coords=place_coords,
+                trip_id=trip_id,
+                place_id = place_id
             )
             db.session.add(new_place)
             db.session.commit()

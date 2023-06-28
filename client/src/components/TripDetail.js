@@ -77,7 +77,9 @@ function TripDetail() {
     }
 
     function handleRadiusChange(e) {
-        setMilesRadius(e.target.value)
+        const input = e.target.value
+        const sanitizedInput = input.replace(/[^0-9]/g, '')
+        setMilesRadius(sanitizedInput)
     }
 
     function handleSubmit(e) {
@@ -95,7 +97,12 @@ function TripDetail() {
         }
 
         fetch(`/${tripDetails.id}/places/${placeID}`, postRequest)
-            .then(r => r.json())
+            .then(r => {
+                if (r.status === 400) {
+                    alert("You've already saved this place!")
+                }
+                return r.json()
+            })
             .then((data) => {
                 console.log(data)
                 closeModal()
@@ -188,6 +195,7 @@ function TripDetail() {
                                             type="number"
                                             value={milesRadius}
                                             onChange={handleRadiusChange}
+                                            pattern="^[1-9][0-9]*$"
                                             className="bg-dark text-light"
                                             required
                                         />
@@ -212,9 +220,14 @@ function TripDetail() {
                         <Modal.Title>{placeDetails.result.name}</Modal.Title>
                     </Modal.Header>
                     <Modal.Body className="modal-dark-body">
+                        {placeDetails.result.price_level ?
+                            <h6 style={{ fontWeight: 'bold' }}>
+                                {Array(placeDetails.result.price_level).fill('$').join('')}
+                            </h6>
+                            : null}
                         {placeDetails.result.rating ?
                             <div>
-                                Rating: {renderStars(placeDetails.result.rating)}
+                                {renderStars(placeDetails.result.rating)} {` (${placeDetails.result.user_ratings_total})`}
                             </div> : null}
                         {placeDetails.result.website ? <div className="modal-right">
                             <Button href={placeDetails.result.website} target="_blank" variant="dark">

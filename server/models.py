@@ -147,6 +147,12 @@ class Place(db.Model, SerializerMixin):
     address = db.Column(db.String)
     type = db.Column(db.String)
     distance = db.Column(db.Integer)
+    website = db.Column(db.String)
+    price_level = db.Column(db.Integer)
+    user_ratings_total = db.Column(db.Integer)
+    rating = db.Column(db.Float)
+    place_coords = db.Column(db.String)
+    place_id = db.Column(db.String)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
     trip_id = db.Column(db.Integer, db.ForeignKey('trips.id'))

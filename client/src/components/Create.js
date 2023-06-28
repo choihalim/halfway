@@ -98,8 +98,7 @@ function Create({ user }) {
                             name="end"
                             value={formState.end}
                             onChange={changeFormState}
-                            style={{ width:"200px",marginBottom: "10px"}}
-                            required
+                            style={{ width: "200px", marginBottom: "10px" }}
                         >
                             <option value="">Select a Friend</option>
                             {friendsList.map((friend, index) =>

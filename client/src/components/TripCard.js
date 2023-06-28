@@ -4,6 +4,7 @@ import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
 import Map from './MapCard';
 import Modal from 'react-bootstrap/Modal'
+import '@fortawesome/fontawesome-free/css/all.min.css'
 import '../modal.css'
 
 function TripCard({ places, id, start_coords, end_coords, midpoint_coords, midpoint, start, end, created_at, created_by, total_distance, status, removeTrip }) {
@@ -67,6 +68,41 @@ function TripCard({ places, id, start_coords, end_coords, midpoint_coords, midpo
         setShowModal(true)
     }
 
+    function formatCoordinates(coordinates) {
+        const { lat, lng } = coordinates;
+        return `(${lat.toFixed(15)}, ${lng.toFixed(15)})`;
+    }
+
+    function renderStars(rating) {
+        const stars = []
+        const fullStars = Math.floor(rating)
+        const hasHalfStar = rating % 1 >= 0.5
+
+        for (let i = 1; i <= fullStars; i++) {
+            stars.push(<i key={i} className="fas fa-star"></i>)
+        }
+
+        if (hasHalfStar) {
+            stars.push(<i key={fullStars + 1} className="fas fa-star-half-alt"></i>)
+        }
+
+        return stars
+    }
+
+    function formatCoordinates(locationString) {
+        const latLngRegex = /[-+]?\d+(\.\d+)?/g;
+        const matches = locationString.match(latLngRegex);
+
+        if (matches && matches.length >= 2) {
+            const lat = parseFloat(matches[0]);
+            const lng = parseFloat(matches[1]);
+            const formattedLocation = `(${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+            return formattedLocation;
+        } else {
+            throw new Error("Invalid location string format");
+        }
+    }
+
     return (
         <>
             <Card bg="dark" text="light" border="secondary" style={{ width: '18rem' }} className={isDeleted ? 'fade-out' : ''}>
@@ -110,9 +146,32 @@ function TripCard({ places, id, start_coords, end_coords, midpoint_coords, midpo
                                         {" "}
                                         <p style={{ fontSize: "medium" }}>({place.type.replace(/_/g, ' ')})</p>
                                     </h5>
-                                    <p key={place.id}>{place.address}</p>
+                                    {place.price_level ? (
+                                        <h6>
+                                            {Array(place.price_level).fill('$').join('')}
+                                        </h6>
+                                    ) : null}
+                                    {place.rating ?
+                                        <div>
+                                            {renderStars(place.rating)} {` (${place.user_ratings_total})`}
+                                        </div>
+                                        : null}
+                                    {place.website ?
+                                        <div className="modal-right">
+                                            <Button href={place.website} target="_blank" variant="dark">
+                                                Website
+                                            </Button>
+                                        </div>
+                                        : null}
+                                    <p>{place.address ?
+                                        place.address : null}
+                                    </p>
                                     <br></br>
-                                    <p key={place.id}>{`Distance (from start): ${place.distance} miles`}</p>
+                                    <div style={{ position: 'relative', height: '300px' }}>
+                                        <Map center={formatCoordinates(place.place_coords)} start={start_coords} end={end_coords} />
+                                    </div>
+                                    <br></br>
+                                    <p>{place.distance !== "None" ? `Distance (from you): ${place.distance} miles` : null}</p>
                                     {tripPlaces.places.length - 1 === index ? null : <hr style={{ margin: "10px 0" }} />}
                                     <br></br>
                                 </>
@@ -126,7 +185,7 @@ function TripCard({ places, id, start_coords, end_coords, midpoint_coords, midpo
                                 </h5>
                                 <p>{tripPlaces.places[0].address}</p>
                                 <br></br>
-                                <p>{`Distance (from start): ${tripPlaces.places[0].distance} miles`}</p>
+                                <p>{tripPlaces.places[0].distance !== "None" ? `Distance (from you): ${tripPlaces.places[0].distance} miles` : null}</p>
                                 <br></br>
                             </>
                         )}
