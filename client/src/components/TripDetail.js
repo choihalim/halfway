@@ -8,6 +8,9 @@ import Modal from 'react-bootstrap/Modal'
 import Row from 'react-bootstrap/Row'
 import Container from 'react-bootstrap/Container'
 import Col from 'react-bootstrap/Col'
+import InputGroup from 'react-bootstrap/InputGroup'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faSearch } from '@fortawesome/free-solid-svg-icons'
 import { useParams } from 'react-router-dom'
 import '@fortawesome/fontawesome-free/css/all.min.css'
 import '../modal.css'
@@ -178,10 +181,13 @@ function TripDetail() {
                     <Row className="justify-content-center">
                         <Col xs={12} sm={8} md={6}>
                             <Form onSubmit={handleSubmit} className="bg-dark text-light rounded shadow p-3" style={{ width: '400px', marginLeft: '110px', marginBottom: '20px', marginTop: '30px' }}>
-                                <Row className="mb-3" style={{ width: '400px' }}>
+                                <Row className="mb-3" style={{ width: '450px' }}>
                                     <Form.Group as={Col} controlId="keyword">
-                                        <Form.Label>Keyword:</Form.Label>
+                                        <Form.Label>
+                                            Keyword:
+                                        </Form.Label>
                                         <Form.Control
+                                            style={{width: "150px"}}
                                             type="text"
                                             value={keyword}
                                             onChange={handleKeywordChange}
@@ -193,6 +199,7 @@ function TripDetail() {
                                         <Form.Label>Radius (miles):</Form.Label>
                                         <Form.Control
                                             type="number"
+                                            style={{width: "75px", marginLeft: "10px"}}
                                             value={milesRadius}
                                             onChange={handleRadiusChange}
                                             pattern="^[1-9][0-9]*$"
@@ -201,8 +208,8 @@ function TripDetail() {
                                         />
                                     </Form.Group>
                                     <Form.Group as={Col} className="d-flex align-items-end">
-                                        <Button variant="primary" type="submit">
-                                            Search
+                                        <Button variant="success" type="submit">
+                                            <FontAwesomeIcon icon={faSearch} />
                                         </Button>
                                     </Form.Group>
                                 </Row>
