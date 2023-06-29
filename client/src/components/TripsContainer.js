@@ -17,7 +17,7 @@ function TripsContainer({ trips, removeTrip }) {
         return (
             <div class="center-container">
                 <div class="fa-3x">
-                    <i class="fas fa-spinner fa-spin"></i>
+                    <i class="fa-regular fa-compass fa-spin"></i>
                 </div>
             </div>
         )
@@ -48,6 +48,7 @@ function TripsContainer({ trips, removeTrip }) {
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}>
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                         <i style={{ color: "#f8f8f8", fontSize: '40px', marginBottom: "1rem" }} class="fa-regular fa-folder-open"></i>
+                        <i class="fa-sharp fa-light fa-location-exclamation"></i>
                         <h1 style={{ color: "#f8f8f8", marginBottom: "1rem", fontSize: '50px' }}>No Trips Found...</h1>
                         <h4 style={{ color: "#f8f8f8", marginBottom: "1rem" }}>Click on the button below to create a trip!</h4>
                         <Button variant="success" href={'/create'}>Create</Button>

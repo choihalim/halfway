@@ -125,7 +125,8 @@ function Friends({ user }) {
         <div className="d-flex justify-content-center">
             <div className="container">
                 <Card bg="dark" text="light" style={{ maxWidth: '400px', height: '400px', margin: '0 auto', marginTop: '30px' }}>
-                    <Card.Header>
+                    <Card.Header style={{ backgroundColor: "#505050" }}>
+                        <i style={{ fontSize: '40px', padding: "20px" }} class="fa-solid fa-user-group"></i>
                     </Card.Header>
                     <div style={{ display: 'block', width: '400px', padding: 25 }}>
                         <Tabs
