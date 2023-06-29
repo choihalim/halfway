@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react';
-import TripCard from "./TripCard";
-import Button from "react-bootstrap/Button";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import '../trips.css';
+import { useState, useEffect } from 'react'
+import TripCard from "./TripCard"
+import Button from "react-bootstrap/Button"
+import '../trips.css'
 
 function TripsContainer({ trips, removeTrip }) {
     const [isLoading, setIsLoading] = useState(true)

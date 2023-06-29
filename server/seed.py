@@ -30,44 +30,44 @@ if __name__ == '__main__':
         db.session.commit()
         # Friendship.query.delete()
 
-        users = []
-        for i in range(30):
-            u = User(
-                username=fake.simple_profile()['username'],
-                email=fake.email(),
-                password=fake.password()
-            )
-            users.append(u)
-        db.session.add_all(users)
-        db.session.commit()
+        # users = []
+        # for i in range(30):
+        #     u = User(
+        #         username=fake.simple_profile()['username'],
+        #         email=fake.email(),
+        #         password=fake.password()
+        #     )
+        #     users.append(u)
+        # db.session.add_all(users)
+        # db.session.commit()
 
-        trips = []
-        for i in range(30):
-            t = Trip(
-                start=str(fake.latlng()),
-                end=str(fake.latlng()),
-                distance=str(randint(1, 400)),
-                midpoint=str(fake.latlng()),
-                status=rc(STATUSES),
-                user_id=rc(users).id
-            )
-            trips.append(t)
-        db.session.add_all(trips)
-        db.session.commit()
+        # trips = []
+        # for i in range(30):
+        #     t = Trip(
+        #         start=str(fake.latlng()),
+        #         end=str(fake.latlng()),
+        #         distance=str(randint(1, 400)),
+        #         midpoint=str(fake.latlng()),
+        #         status=rc(STATUSES),
+        #         user_id=rc(users).id
+        #     )
+        #     trips.append(t)
+        # db.session.add_all(trips)
+        # db.session.commit()
 
-        places = []
-        for i in range(50):
-            random_trip = rc(trips)
-            p = Place(
-                name=fake.company(),
-                address=str(fake.latlng()),
-                type=rc(PLACE_CATEGORIES),
-                distance=randint(1, 10),
-                trip_id=random_trip.id
-            )
-            places.append(p)
-        db.session.add_all(places)
-        db.session.commit()
+        # places = []
+        # for i in range(50):
+        #     random_trip = rc(trips)
+        #     p = Place(
+        #         name=fake.company(),
+        #         address=str(fake.latlng()),
+        #         type=rc(PLACE_CATEGORIES),
+        #         distance=randint(1, 10),
+        #         trip_id=random_trip.id
+        #     )
+        #     places.append(p)
+        # db.session.add_all(places)
+        # db.session.commit()
 
         # friends = []
         # for i in range(30):
@@ -79,17 +79,17 @@ if __name__ == '__main__':
         # db.session.add_all(friends)
         # db.session.commit()
 
-        comments = []
-        for i in range(50):
-            random_trip = rc(trips)
-            c = Comment(
-                body=fake.sentence(nb_words=7),
-                imgURL=fake.file_name(category='image'),
-                trip_id=random_trip.id,
-                user_id=random_trip.user_id
-            )
-            comments.append(c)
-        db.session.add_all(comments)
-        db.session.commit()
+        # comments = []
+        # for i in range(50):
+        #     random_trip = rc(trips)
+        #     c = Comment(
+        #         body=fake.sentence(nb_words=7),
+        #         imgURL=fake.file_name(category='image'),
+        #         trip_id=random_trip.id,
+        #         user_id=random_trip.user_id
+        #     )
+        #     comments.append(c)
+        # db.session.add_all(comments)
+        # db.session.commit()
 
         print("Finishing seed...")
