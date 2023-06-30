@@ -185,6 +185,10 @@ function TripCard({ places, id, start_coords, end_coords, midpoint_coords, midpo
                                 </h5>
                                 <p>{tripPlaces.places[0].address}</p>
                                 <br></br>
+                                <div style={{ position: 'relative', height: '300px' }}>
+                                    <Map center={formatCoordinates(tripPlaces.places[0].place_coords)} start={tripPlaces.start_coords} end={tripPlaces.end_coords} />
+                                </div>
+                                <br></br>
                                 <p>{tripPlaces.places[0].distance !== "None" ? `Distance (from you): ${tripPlaces.places[0].distance} miles` : null}</p>
                                 <br></br>
                             </>
