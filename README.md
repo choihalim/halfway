@@ -1,9 +1,8 @@
-# Phase 4 Full-Stack Application Project Template
+# HalfWay
 
-## Learning Goals
+## Description
 
-- Discuss the basic directory structure of a full-stack Flask/React application.
-- Carry out the first steps in creating your Phase 4 project.
+- React frontend and Python Flask backend application designed to provide users a solution to meetups, creating a midpoint between users and suggesting places within a specified radius
 
 ***
 
